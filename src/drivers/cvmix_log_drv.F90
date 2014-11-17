@@ -39,21 +39,31 @@ Subroutine cvmix_log_driver()
 
   ! Create a new log entry that is identical to the entry we just created
   ! Then manually change a couple of values
-  call cvmix_new_log(nextlog, cvmix_status%Verbose, "Message 2",              &
+  call cvmix_new_log(nextlog, cvmix_status%Verbose, "Verbose message",        &
                      "cvmix_log_drv", "cvmix_log_driver")
   call cvmix_new_log(thirdlog, nextlog)
   thirdlog%StatusCode = cvmix_status%Warning
-  thirdlog%Message    = "Message 3"
+  thirdlog%Message    = "Warning message"
 
   ! Link messages together
   call cvmix_message_append(rootlog, nextlog)
-  call cvmix_erase_log(nextlog)
   call cvmix_message_append(rootlog, thirdlog)
   call cvmix_erase_log(thirdlog)
+  nextlog%StatusCode = cvmix_status%Error
+  nextlog%Message    = "Error message"
+  call cvmix_message_append(rootlog, nextlog)
+  call cvmix_erase_log(nextlog)
 
+  write(*,"(A)") "Printing contents of log:"
+  write(*,"(A)") "----"
   call cvmix_print_log(rootlog, 0)
-!  call cvmix_print_log(nextlog)
   call cvmix_erase_log(rootlog)
+  write(*,"(A)") "----"
+  print*, "Printing contents of [empty] log:"
+  ! Should be empty (and should not seg-fault)
+  call cvmix_print_log(rootlog, 0)
+  call cvmix_print_log(nextlog, 0)
+  call cvmix_print_log(thirdlog, 0)
 
 !EOC
 

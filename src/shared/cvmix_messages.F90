@@ -181,6 +181,10 @@ contains
       current => next
     end do
 
+    if (associated(self)) then
+      nullify(self)
+    end if
+
 !EOC
 
   end subroutine cvmix_erase_log
