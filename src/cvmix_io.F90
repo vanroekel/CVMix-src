@@ -16,8 +16,10 @@ module cvmix_io
 
    use cvmix_kinds_and_types, only : cvmix_data_type,                         &
                                      cvmix_r8,                                &
+                                     cvmix_message_type,                      &
                                      cvmix_zero,                              &
                                      cvmix_strlen
+   use cvmix_messages,        only : cvmix_status
    use cvmix_utils,           only : cvmix_att_name
 #ifdef _NETCDF
    use netcdf
@@ -41,6 +43,7 @@ module cvmix_io
   public :: cvmix_io_close_all
   public :: print_open_files
   public :: cvmix_output_write_att
+  public :: cvmix_print_log
 
   interface cvmix_input_read
     module procedure cvmix_input_read_1d_double
@@ -1523,6 +1526,50 @@ contains
 
   end function get_file_type
 
+!BOP
+
+! !IROUTINE: cvmix_print_log
+! !INTERFACE:
+
+  subroutine cvmix_print_log(self, verbosity)
+
+! !DESCRIPTION:
+!  Print the contents of a message log linked list.
+!\\
+!\\
+
+! !USES:
+!  Only those used by entire module. 
+
+! !INPUT PARAMETERS:
+    type(cvmix_message_type), pointer,  intent(in) :: self
+    integer,                  optional, intent(in) :: verbosity
+
+! !LOCAL VARIABLES:
+    type(cvmix_message_type), pointer :: current
+    integer                           :: min_verb
+
+!EOP
+!BOC
+
+    if (present(verbosity)) then
+      min_verb = verbosity
+    else
+      min_verb = cvmix_status%Warning
+    end if
+
+    current => self
+    do while (associated(current))
+      if (current%StatusCode.ge.min_verb) then
+        call cvmix_print_log_entry(current)
+      end if
+      current => current%next
+    end do
+
+!BOC
+
+  end subroutine cvmix_print_log
+
 #ifdef _NETCDF
 !BOP
 
@@ -1649,6 +1696,33 @@ contains
   end subroutine netcdf_check
 
 #endif
+
+  ! Private routine to parse StatusCode
+  subroutine cvmix_print_log_entry(current)
+
+    type(cvmix_message_type), pointer,  intent(in) :: current
+
+600 format('Success reported from ',A,'::',A,' -- ',A)
+601 format(A,'::',A,' -- ',A)
+603 format('WARNING reported from ',A,'::',A,' -- ',A)
+604 format('ERROR reported from ',A,'::',A,' -- ',A)
+
+    select case (current%StatusCode)
+      case (cvmix_status%Success)
+        write(*, 600) trim(current%ModuleName), trim(current%SubroutineName), &
+                      trim(current%Message)
+      case (cvmix_status%Verbose, cvmix_status%Informational)
+        write(*, 601) trim(current%ModuleName), trim(current%SubroutineName), &
+                      trim(current%Message)
+      case (cvmix_status%Warning)
+        write(*, 603) trim(current%ModuleName), trim(current%SubroutineName), &
+                      trim(current%Message)
+      case (cvmix_status%Error)
+        write(*, 604) trim(current%ModuleName), trim(current%SubroutineName), &
+                      trim(current%Message)
+    end select
+
+  end subroutine cvmix_print_log_entry
 
 ! DEBUGGING ROUTINE
   subroutine print_open_files()

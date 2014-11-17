@@ -55,6 +55,8 @@ Program cvmix_driver
       call cvmix_ddiff_driver(2*nlev, 2*max_nlev)
     case ('kpp')
       call cvmix_kpp_driver()
+    case ('log')
+      call cvmix_log_driver()
     case DEFAULT
       print*, "WARNING: mix_type = '", trim(mix_type), "' is not supported by this driver."
   end select

@@ -180,6 +180,20 @@ module cvmix_kinds_and_types
 
   end type cvmix_global_params_type
 
+  ! cvmix_message_type contains information to pass strings back to the ocean
+  ! model
+  type, public :: cvmix_message_type
+    integer :: StatusCode
+
+    ! Informational Strings
+    character(len=cvmix_strlen) :: Message,       &! Message text
+                                   ModuleName,    &! Module producing message
+                                   SubroutineName  ! Subroutine producing message
+
+    type(cvmix_message_type), pointer :: next ! Linked list to track events
+
+  end type cvmix_message_type
+
 !EOP
 
 end module cvmix_kinds_and_types
