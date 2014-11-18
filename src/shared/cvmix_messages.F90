@@ -26,9 +26,9 @@ module cvmix_messages
   ! cvmix_verbosity_levels is basically an enumeration of the possible status
   ! levels returned by cvmix_message_type
   type, private :: cvmix_verbosity_levels
-    integer :: Success
     integer :: Verbose
-    integer :: Informational
+    integer :: Diagnostic
+    integer :: EchoNamelist
     integer :: Warning
     integer :: Error
   end type cvmix_verbosity_levels
@@ -43,6 +43,7 @@ module cvmix_messages
 
 ! !PUBLIC MEMBER FUNCTIONS:
 
+  public :: cvmix_message_init
   public :: cvmix_new_log
   public :: cvmix_message_append
   public :: cvmix_erase_log
@@ -52,10 +53,41 @@ module cvmix_messages
     module procedure cvmix_new_log_low
   end interface cvmix_new_log
 
+  ! Private variable that is set in cvmix_message_init -- by default, don't
+  ! write anything into Message log
+  integer :: MinMessageLevel = cvmix_status%Error+1
+
 !EOP
 
 contains
 
+!BOP
+
+! !IROUTINE: cvmix_message_init
+! !INTERFACE:
+
+  subroutine cvmix_message_init(MessageLevel)
+
+! !DESCRIPTION:
+!  Initialize module to enable writing CVMix message logs
+!\\
+!\\
+
+! !INPUT PARAMETERS:
+    integer, optional, intent(in) :: MessageLevel
+
+!EOP
+!BOC
+
+    if (present(MessageLevel)) then
+      MinMessageLevel = MessageLevel
+    else
+      MinMessageLevel = cvmix_status%Warning
+    end if
+
+!EOC
+
+  end subroutine cvmix_message_init
 !BOP
 
 ! !IROUTINE: cvmix_new_log_copy
@@ -76,8 +108,12 @@ contains
 !BOC
 
     if(present(newdata)) then
-      call cvmix_new_log(self, newdata%StatusCode, newdata%Message,           &
-                         newdata%ModuleName, newdata%SubroutineName)
+      if (associated(newdata)) then
+        call cvmix_new_log(self, newdata%StatusCode, newdata%Message,         &
+                           newdata%ModuleName, newdata%SubroutineName)
+      else
+        nullify(self)
+      end if
     else
       allocate(self)
       nullify(self%next)
@@ -112,10 +148,15 @@ contains
     allocate(self)
     nullify(self%next)
 
-    self%StatusCode     = StatusCode
-    self%Message        = Message
-    self%ModuleName     = ModuleName
-    self%SubroutineName = SubroutineName
+    if (StatusCode.ge.MinMessageLevel) then
+      self%StatusCode     = StatusCode
+      self%Message        = Message
+      self%ModuleName     = ModuleName
+      self%SubroutineName = SubroutineName
+    else
+      deallocate(self)
+      nullify(self)
+    end if
 
 !EOC
 

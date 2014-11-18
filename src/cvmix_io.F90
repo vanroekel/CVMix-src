@@ -1531,7 +1531,7 @@ contains
 ! !IROUTINE: cvmix_print_log
 ! !INTERFACE:
 
-  subroutine cvmix_print_log(self, verbosity)
+  subroutine cvmix_print_log(self)
 
 ! !DESCRIPTION:
 !  Print the contents of a message log linked list.
@@ -1543,26 +1543,16 @@ contains
 
 ! !INPUT PARAMETERS:
     type(cvmix_message_type), pointer,  intent(in) :: self
-    integer,                  optional, intent(in) :: verbosity
 
 ! !LOCAL VARIABLES:
     type(cvmix_message_type), pointer :: current
-    integer                           :: min_verb
 
 !EOP
 !BOC
 
-    if (present(verbosity)) then
-      min_verb = verbosity
-    else
-      min_verb = cvmix_status%Warning
-    end if
-
     current => self
     do while (associated(current))
-      if (current%StatusCode.ge.min_verb) then
-        call cvmix_print_log_entry(current)
-      end if
+      call cvmix_print_log_entry(current)
       current => current%next
     end do
 
@@ -1702,17 +1692,14 @@ contains
 
     type(cvmix_message_type), pointer,  intent(in) :: current
 
-600 format('Success reported from ',A,'::',A,' -- ',A)
-601 format(A,'::',A,' -- ',A)
-603 format('WARNING reported from ',A,'::',A,' -- ',A)
-604 format('ERROR reported from ',A,'::',A,' -- ',A)
+600 format(A,'::',A,' -- ',A)
+603 format('WARNING (',A,'::',A,') -- ',A)
+604 format('ERROR (',A,'::',A,') -- ',A)
 
     select case (current%StatusCode)
-      case (cvmix_status%Success)
+      case (cvmix_status%Verbose, cvmix_status%Diagnostic,                    &
+            cvmix_status%EchoNamelist)
         write(*, 600) trim(current%ModuleName), trim(current%SubroutineName), &
-                      trim(current%Message)
-      case (cvmix_status%Verbose, cvmix_status%Informational)
-        write(*, 601) trim(current%ModuleName), trim(current%SubroutineName), &
                       trim(current%Message)
       case (cvmix_status%Warning)
         write(*, 603) trim(current%ModuleName), trim(current%SubroutineName), &
