@@ -184,11 +184,17 @@ contains
 !EOP
 !BOC
 
-    current => self
-    do while (associated(current%next))
-      current => current%next
-    end do
-    call cvmix_new_log(current%next, newdata)
+    if (.not.associated(self)) then
+      if (associated(newdata)) then
+        call cvmix_new_log(self, newdata)
+      end if
+    else
+      current => self
+      do while (associated(current%next))
+        current => current%next
+      end do
+      call cvmix_new_log(current%next, newdata)
+    end if
 
 !EOC
 

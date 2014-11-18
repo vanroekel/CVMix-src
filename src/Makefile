@@ -116,17 +116,17 @@ endif
 # Note that these are separated 
 OBJS = cvmix_driver.o \
        cvmix_io.o
-DRIVER_OBJS = cvmix_bgrnd_BL.o      \
+DRIVER_OBJS = cvmix_background_drv.o  \
               cvmix_shear_drv.o     \
               cvmix_tidal_Simmons.o \
               cvmix_ddiff_drv.o     \
               cvmix_kpp_drv.o       \
               cvmix_log_drv.o
 ifeq ($(UCASE),TRUE)
-  MODS_TMP = $(shell echo $(OBJS) | tr '[a-z]' '[A-Z]')
+  MODS_TMP = $(shell echo $(OBJS) $(DRIVERS_OBJS) | tr '[a-z]' '[A-Z]')
   MODS = ${MODS_TMP:.O=.mod}
 else
-  MODS = ${OBJS:.o=.mod}
+  MODS = ${OBJS:.o=.mod} ${DRIVER_OBJS:.o=.mod}
 endif
 
 ifeq ($(USE_DEPS),TRUE)

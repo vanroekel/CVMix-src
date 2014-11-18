@@ -1531,7 +1531,7 @@ contains
 ! !IROUTINE: cvmix_print_log
 ! !INTERFACE:
 
-  subroutine cvmix_print_log(self)
+  subroutine cvmix_print_log(self, StopOnError)
 
 ! !DESCRIPTION:
 !  Print the contents of a message log linked list.
@@ -1543,16 +1543,28 @@ contains
 
 ! !INPUT PARAMETERS:
     type(cvmix_message_type), pointer,  intent(in) :: self
+    logical,                  optional, intent(in) :: StopOnError
 
 ! !LOCAL VARIABLES:
     type(cvmix_message_type), pointer :: current
+    logical :: ExitOnError
 
 !EOP
 !BOC
 
+    if (present(StopOnError)) then
+      ExitOnError = StopOnError
+    else
+      ExitOnError = .true.
+    end if
+
     current => self
     do while (associated(current))
       call cvmix_print_log_entry(current)
+      if ((current%StatusCode.eq.cvmix_status%Error).and.ExitOnError) then
+        write(*,"(A)") "Exiting due to error!"
+        stop 1
+      end if
       current => current%next
     end do
 
@@ -1692,9 +1704,9 @@ contains
 
     type(cvmix_message_type), pointer,  intent(in) :: current
 
-600 format(A,'::',A,' -- ',A)
-603 format('WARNING (',A,'::',A,') -- ',A)
-604 format('ERROR (',A,'::',A,') -- ',A)
+600 format('(',A,'::',A,'): ',A)
+603 format('WARNING (',A,'::',A,'): ',A)
+604 format('ERROR (',A,'::',A,'): ',A)
 
     select case (current%StatusCode)
       case (cvmix_status%Verbose, cvmix_status%Diagnostic,                    &

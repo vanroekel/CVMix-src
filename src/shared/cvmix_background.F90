@@ -27,6 +27,7 @@ module cvmix_background
   use cvmix_kinds_and_types, only : cvmix_PI,                                 &
                                     cvmix_r8,                                 &
                                     cvmix_strlen,                             &
+                                    cvmix_message_type,                       &
                                     cvmix_zero,                               &
                                     cvmix_data_type,                          &
                                     cvmix_global_params_type,                 &
@@ -35,6 +36,10 @@ module cvmix_background
                                     CVMIX_MAX_OLD_AND_NEW_VALS
   use cvmix_put_get,         only : cvmix_put
   use cvmix_utils,           only : cvmix_update_wrap
+  use cvmix_messages,        only : cvmix_new_log,                            &
+                                    cvmix_erase_log,                          &
+                                    cvmix_message_append,                     &
+                                    cvmix_status
 
 !EOP
 
@@ -101,6 +106,8 @@ module cvmix_background
 !EOP
 
   type(cvmix_bkgnd_params_type), target :: CVmix_bkgnd_params_saved
+  character(len=cvmix_strlen)           :: ModuleName = "cvmix_background"
+  character(len=cvmix_strlen)           :: RoutineName
 
 contains
 
@@ -364,8 +371,8 @@ contains
 ! !INTERFACE:
 
   subroutine cvmix_init_bkgnd_BryanLewis(CVmix_vars, bl1, bl2, bl3, bl4,      &
-                                         CVmix_params_in, old_vals,           &
-                                         CVmix_bkgnd_params_user)
+                                         CVmix_params_in, MessageLog,         &
+                                         old_vals, CVmix_bkgnd_params_user)
 
 ! !DESCRIPTION:
 !  Initialization routine for Bryan-Lewis diffusivity/viscosity calculation.
@@ -414,18 +421,24 @@ contains
 ! !OUTPUT PARAMETERS:
     type(cvmix_bkgnd_params_type),  target, optional, intent(inout) ::        &
                                                CVmix_bkgnd_params_user
+    type(cvmix_message_type), pointer, intent(inout) :: MessageLog
 !EOP
 !BOC
 
     ! Pointers to parameter data type
     type(cvmix_bkgnd_params_type),  pointer :: CVmix_bkgnd_params_out
 
+    ! Pointer for new log entry
+    type(cvmix_message_type), pointer :: NewMessage
+    character(len=cvmix_strlen)       :: Message
+
     ! Local index
-    integer :: nlev  ! max number of levels
+    integer :: i,nlev  ! max number of levels
 
     ! Local copies to make code easier to read
     real(cvmix_r8), dimension(CVmix_params_in%max_nlev+1) :: Mdiff, Tdiff, zw
 
+    RoutineName = "cvmix_init_bkgnd_BryanLewis"
     CVmix_bkgnd_params_out => CVmix_bkgnd_params_saved
     if (present(CVmix_bkgnd_params_user)) then
       CVmix_bkgnd_params_out => CVmix_bkgnd_params_user
@@ -438,6 +451,27 @@ contains
       deallocate(CVmix_bkgnd_params_out%static_Mdiff)
     if (allocated(CVmix_bkgnd_params_out%static_Tdiff))                       &
       deallocate(CVmix_bkgnd_params_out%static_Tdiff)
+
+    ! Update Log
+    nullify(NewMessage)
+    do i=1,4
+      select case (i)
+        case (1)
+          write(Message, "(A,E10.3E2)") "vdc1 = ", bl1
+        case (2)
+          write(Message, "(A,E10.3E2)") "vdc2 = ", bl2
+        case (3)
+          write(Message, "(A,E10.3E2)") "linv = ", bl3
+        case (4)
+          write(Message, "(A,E10.3E2)") "dpth = ", bl4
+      end select
+      call cvmix_new_log(NewMessage, cvmix_status%EchoNamelist, trim(Message),&
+                         trim(ModuleName), trim(RoutineName))
+      call cvmix_message_append(MessageLog, NewMessage)
+      if (associated(NewMessage)) then
+        call cvmix_erase_log(NewMessage)
+      end if
+    end do
 
     ! Set static_[MT]diff in background_input_type
     zw   = -CVmix_vars%zw_iface
