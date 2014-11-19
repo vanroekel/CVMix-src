@@ -29,10 +29,10 @@ Program cvmix_driver
                                     cvmix_strlen
   use cvmix_messages,        only : cvmix_message_init,                       &
                                     cvmix_status,                             &
-                                    cvmix_new_log,                            &
                                     cvmix_erase_log,                          &
-                                    cvmix_message_append,                     &
-                                    cvmix_log_namelist
+                                    cvmix_log_verbose,                        &
+                                    cvmix_log_namelist,                       &
+                                    cvmix_log_error
   use cvmix_background_drv,  only : cvmix_BL_driver
   use cvmix_kpp_drv,         only : cvmix_kpp_driver
   use cvmix_log_drv,         only : cvmix_log_driver
@@ -41,15 +41,15 @@ Program cvmix_driver
 !EOP
 !BOC
 
-  integer :: nlev, max_nlev
+  integer :: nlev, max_nlev, StatusLevel
   real(kind=cvmix_r8) :: ocn_depth 
   character(len=cvmix_strlen) :: mix_type, Verbosity, Message
-  type(cvmix_message_type), pointer :: CVMixLog, SingleLog
+  type(cvmix_message_type), pointer :: CVMixLog
+  character(len=12), parameter :: RoutineName = "cvmix_driver"
 
   namelist/cvmix_nml/mix_type, nlev, max_nlev, ocn_depth, Verbosity
 
   nullify(CVMixLog)
-  nullify(SingleLog)
 
   mix_type = 'unset'
   nlev = 0
@@ -62,35 +62,32 @@ Program cvmix_driver
   end if
   select case (trim(Verbosity))
     case ('Verbose')
-      call cvmix_message_init(cvmix_status%Verbose)
-    case ('Diagnostic')
-      call cvmix_message_init(cvmix_status%Diagnostic)
+      StatusLevel = cvmix_status%Verbose
     case ('EchoNamelist')
-      call cvmix_message_init(cvmix_status%EchoNamelist)
+      StatusLevel = cvmix_status%EchoNamelist
+    case ('Diagnostic')
+      StatusLevel = cvmix_status%Diagnostic
     case ('Warning')
-      call cvmix_message_init(cvmix_status%Warning)
+      StatusLevel = cvmix_status%Warning
     case ('Error')
-      call cvmix_message_init(cvmix_status%Error)
+      StatusLevel = cvmix_status%Error
     case DEFAULT
       call cvmix_message_init()
       write(Message,'(2A)') trim(Verbosity), " is not a valid Verbosity"
-      call cvmix_new_log(SingleLog, cvmix_status%Error, trim(Message),        &
-                         "Main", "cvmix_driver")
-      call cvmix_message_append(CVMixLog, SingleLog)
-      call cvmix_erase_log(SingleLog)
+      call cvmix_log_error(CVMixLog, Message, "Main", RoutineName)
+      StatusLevel = cvmix_status%Warning
   end select
+  call cvmix_message_init(StatusLevel)
   call cvmix_print_log(CVMixLog)
   call cvmix_erase_log(CVMixLog)
 
-  call cvmix_log_namelist(CVMixLog, mix_type, "mix_type", "Main",             &
-                          "cvmix_driver")
-  call cvmix_log_namelist(CVMixLog, nlev, "nlev", "Main", "cvmix_driver")
-  call cvmix_log_namelist(CVMixLog, max_nlev, "max_nlev", "Main",             &
-                          "cvmix_driver")
+  call cvmix_log_namelist(CVMixLog, mix_type, "mix_type", "Main", RoutineName)
+  call cvmix_log_namelist(CVMixLog, nlev, "nlev", "Main", RoutineName)
+  call cvmix_log_namelist(CVMixLog, max_nlev, "max_nlev", "Main", RoutineName)
   call cvmix_log_namelist(CVMixLog, ocn_depth, "ocn_depth", "Main",           &
-                          "cvmix_driver")
+                          RoutineName)
   call cvmix_log_namelist(CVMixLog, Verbosity, "Verbosity", "Main",           &
-                          "cvmix_driver")
+                          RoutineName)
                      
   call cvmix_print_log(CVMixLog)
   call cvmix_erase_log(CVMixLog)
@@ -108,20 +105,15 @@ Program cvmix_driver
       call cvmix_kpp_driver(CVMixLog)
     case ('log')
       call cvmix_log_driver()
+      call cvmix_message_init(StatusLevel)
     case DEFAULT
       write(Message, "(A,A,A)") "mix_type = '", trim(mix_type),               &
                                 "' is not supported by this driver."
-      call cvmix_new_log(SingleLog, cvmix_status%Error, trim(Message),        &
-                         "Main", "cvmix_driver")
-      call cvmix_message_append(CVMixLog, SingleLog)
-      call cvmix_erase_log(SingleLog)
+      call cvmix_log_error(CVMixLog, Message, "Main", RoutineName)
   end select
 
   write(Message, "(A,A)") "Completed run with mix_type = ", trim(mix_type)
-  call cvmix_new_log(SingleLog, cvmix_status%Verbose, trim(Message), "Main",  &
-                     "cvmix_driver")
-  call cvmix_message_append(CVMixLog, SingleLog)
-  call cvmix_erase_log(SingleLog)
+  call cvmix_log_verbose(CVMixLog, Message, "Main", RoutineName)
   call cvmix_print_log(CVMixLog)
   call cvmix_erase_log(CVMixLog)
 
