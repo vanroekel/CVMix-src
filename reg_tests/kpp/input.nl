@@ -1,5 +1,6 @@
 &cvmix_nml
-mix_type = 'kpp'
+mix_type  = 'kpp'
+Verbosity = 'Diagnostic'
 /
 
 ! Test 1 params

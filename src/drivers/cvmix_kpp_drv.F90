@@ -13,10 +13,11 @@ module cvmix_kpp_drv
 !\\
 
 ! !USES:
-  use cvmix_kinds_and_types, only : cvmix_r8,                 &
-                                    cvmix_zero,               &
-                                    cvmix_one,                &
-                                    cvmix_strlen,             &
+  use cvmix_kinds_and_types, only : cvmix_r8,                                 &
+                                    cvmix_strlen,                             &
+                                    cvmix_message_type,                       &
+                                    cvmix_zero,                               &
+                                    cvmix_one,                                &
                                     cvmix_data_type
   use cvmix_kpp,             only : cvmix_init_kpp,                           &
                                     cvmix_get_kpp_real,                       &
@@ -28,10 +29,10 @@ module cvmix_kpp_drv
                                     cvmix_kpp_compute_shape_function_coeffs,  &
                                     cvmix_coeffs_kpp
   use cvmix_put_get,         only : cvmix_put
-  use cvmix_io,              only : cvmix_io_open,            &
-                                    cvmix_output_write,       &
+  use cvmix_io,              only : cvmix_io_open,                            &
+                                    cvmix_output_write,                       &
 #ifdef _NETCDF
-                                    cvmix_output_write_att,   &
+                                    cvmix_output_write_att,                   &
 #endif
                                     cvmix_io_close
 
@@ -63,7 +64,10 @@ contains
 
 ! !INTERFACE:
 
-  subroutine cvmix_kpp_driver()
+  subroutine cvmix_kpp_driver(CVMixLog)
+
+! !INPUT PARAMETERS:
+    type(cvmix_message_type), pointer, intent(inout) :: CVMixLog
 
 !EOP
 !BOC
@@ -173,7 +177,8 @@ contains
       print*, "----------"
 
       ! Initialize parameter datatype and set up column
-      call cvmix_init_kpp(ri_crit=ri_crit, interp_type=interp_type_t1)
+      call cvmix_init_kpp(ri_crit=ri_crit, interp_type=interp_type_t1,        &
+                          MessageLog=CVMixLog)
       call cvmix_put(CVmix_vars1, 'nlev', nlev1)
       call cvmix_put(CVmix_vars1, 'ocn_depth',                                &
                                   layer_thick1*real(nlev1,cvmix_r8))
@@ -241,7 +246,7 @@ contains
       print*, "Test 2: Computing G(sigma)"
       print*, "----------"
 
-      call cvmix_init_kpp(MatchTechnique='MatchGradient')
+      call cvmix_init_kpp(MatchTechnique='MatchGradient', MessageLog=CVMixLog)
       call cvmix_kpp_compute_shape_function_coeffs(cvmix_zero, cvmix_zero,    &
                                                    shape_coeffs)
       write(*,"(1X,A,4F7.3)") "Coefficients are: ", shape_coeffs
@@ -255,7 +260,8 @@ contains
       print*, "Test 3: determining phi_m and phi_s (inversely proportional ", &
               "to w_m and w_s, respectively)"
       print*, "----------"
-      call cvmix_init_kpp(vonkarman=cvmix_one, surf_layer_ext=cvmix_one)
+      call cvmix_init_kpp(vonkarman=cvmix_one, surf_layer_ext=cvmix_one,      &
+                          MessageLog=CVMixLog)
       print*, "Coefficients for computing phi_m and phi_s:"
       print*, "a_m = ", cvmix_get_kpp_real('a_m')
       print*, "c_m = ", cvmix_get_kpp_real('c_m')
@@ -304,7 +310,7 @@ contains
       print*, "        (2 cases - boundary layer above and below cell center)"
       print*, "----------"
 
-      call cvmix_init_kpp(MatchTechnique='MatchGradient')
+      call cvmix_init_kpp(MatchTechnique='MatchGradient', MessageLog=CVMixLog)
       nlev4 = 5
       max_nlev4 = 10
       if (OBL_levid4.gt.nlev4) &
@@ -357,7 +363,8 @@ contains
       print*, "kOBL_depth = ", CVmix_vars4%kOBL_depth
 
       call cvmix_init_kpp(ri_crit=ri_crit, vonkarman=0.4_cvmix_r8,            &
-                          interp_type2=interp_type_t4, lnoDGat1=lnoDGat1)
+                          interp_type2=interp_type_t4, lnoDGat1=lnoDGat1,     &
+                          MessageLog=CVMixLog)
       call cvmix_coeffs_kpp(CVmix_vars4)
 
       print*, "Height and Diffusivity throughout column: "
@@ -399,7 +406,8 @@ contains
       print*, "kOBL_depth = ", CVmix_vars4%kOBL_depth
 
       call cvmix_init_kpp(ri_crit=ri_crit, vonkarman=0.4_cvmix_r8,            &
-                          interp_type2=interp_type_t4, lnoDGat1=lnoDGat1)
+                          interp_type2=interp_type_t4, lnoDGat1=lnoDGat1,     &
+                          MessageLog=CVMixLog)
       call cvmix_coeffs_kpp(CVmix_vars4)
 
       print*, "Height and Diffusivity throughout column: "
@@ -435,8 +443,8 @@ contains
 
       ! using linear interpolation, averaging Nsqr, and setting Cv = 1.5 to
       ! match LMD result
-      call cvmix_init_kpp(Cv = 1.5_cvmix_r8, interp_type=interp_type_t5,      &
-                          lavg_N_or_Nsqr = lavg_N_or_Nsqr)
+      call cvmix_init_kpp(Cv=1.5_cvmix_r8, interp_type=interp_type_t5,        &
+                          lavg_N_or_Nsqr=lavg_N_or_Nsqr, MessageLog=CVMixLog)
 
       ! Set up vertical levels (centers and interfaces) and compute bulk
       ! Richardson number
@@ -566,7 +574,7 @@ contains
       print*, "Test 6: 2 simple tests for velocity scale"
       print*, "----------"
     
-      call cvmix_init_kpp(vonkarman=vonkarman6)
+      call cvmix_init_kpp(vonkarman=vonkarman6, MessageLog=CVMixLog)
       sigma6 = 0.1_cvmix_r8
 
       surf_buoy_force6 = cvmix_zero

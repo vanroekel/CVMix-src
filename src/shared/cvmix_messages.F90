@@ -28,8 +28,8 @@ module cvmix_messages
   ! levels returned by cvmix_message_type
   type, private :: cvmix_verbosity_levels
     integer :: Verbose
-    integer :: Diagnostic
     integer :: EchoNamelist
+    integer :: Diagnostic
     integer :: Warning
     integer :: Error
   end type cvmix_verbosity_levels
@@ -53,6 +53,7 @@ module cvmix_messages
   interface cvmix_log_namelist
     module procedure cvmix_log_namelist_int
     module procedure cvmix_log_namelist_r8
+    module procedure cvmix_log_namelist_bool
     module procedure cvmix_log_namelist_str
   end interface cvmix_log_namelist
 
@@ -279,6 +280,47 @@ contains
 !EOC
 
   end subroutine cvmix_log_namelist_r8
+
+!BOP
+
+! !IROUTINE: cvmix_log_namelist_bool
+! !INTERFACE:
+
+  subroutine cvmix_log_namelist_bool(self, val, VarName, ModuleName,          &
+                                     RoutineName)
+
+! !DESCRIPTION:
+!  Prints "varname = val" to log (with status "EchoNamelist") for logical val
+!\\
+!\\
+
+! !INPUT PARAMETERS:
+    type(cvmix_message_type), pointer, intent(inout) :: self
+    logical,                           intent(in)    :: val
+    character(len=*),                  intent(in)    :: VarName, ModuleName,  &
+                                                        RoutineName
+
+!EOP
+!BOC
+
+    type(cvmix_message_type), pointer :: NewEntry
+    character(len=cvmix_strlen)       :: Message
+
+    if (val) then
+      write(Message, "(2A)") trim(VarName), " = .true."
+    else
+      write(Message, "(2A)") trim(VarName), " = .false."
+    end if
+
+    call cvmix_new_log(NewEntry, cvmix_status%EchoNamelist, Message,          &
+                       ModuleName, RoutineName)
+
+    call cvmix_message_append(self, NewEntry)
+    call cvmix_erase_log(NewEntry)
+
+!EOC
+
+  end subroutine cvmix_log_namelist_bool
 
 !BOP
 

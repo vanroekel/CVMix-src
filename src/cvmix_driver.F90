@@ -105,7 +105,7 @@ Program cvmix_driver
     case ('ddiff')
       call cvmix_ddiff_driver(2*nlev, 2*max_nlev)
     case ('kpp')
-      call cvmix_kpp_driver()
+      call cvmix_kpp_driver(CVMixLog)
     case ('log')
       call cvmix_log_driver()
     case DEFAULT

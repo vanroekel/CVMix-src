@@ -26,19 +26,22 @@
 ! !USES:
 
   use cvmix_kinds_and_types, only : cvmix_r8,                                 &
+                                    cvmix_strlen,                             &
+                                    cvmix_message_type,                       &
                                     cvmix_zero,                               &
                                     cvmix_one,                                &
                                     cvmix_data_type,                          &
                                     CVMIX_OVERWRITE_OLD_VAL,                  &
                                     CVMIX_SUM_OLD_AND_NEW_VALS,               &
                                     CVMIX_MAX_OLD_AND_NEW_VALS
-  use cvmix_math, only :            CVMIX_MATH_INTERP_LINEAR,                 &
+  use cvmix_math,            only : CVMIX_MATH_INTERP_LINEAR,                 &
                                     CVMIX_MATH_INTERP_QUAD,                   &
                                     CVMIX_MATH_INTERP_CUBE_SPLINE,            &
                                     cvmix_math_poly_interp,                   &
                                     cvmix_math_cubic_root_find,               &
                                     cvmix_math_evaluate_cubic
   use cvmix_put_get,         only : cvmix_put
+  use cvmix_messages,        only : cvmix_log_namelist
   use cvmix_utils,           only : cvmix_update_wrap
 
 !EOP
@@ -66,6 +69,8 @@
   public :: cvmix_coeffs_kpp
   public :: cvmix_put_kpp
   public :: cvmix_get_kpp_real
+  public :: cvmix_get_kpp_logical
+  public :: cvmix_get_kpp_str
   public :: cvmix_kpp_compute_bulk_Richardson
   public :: cvmix_kpp_compute_turbulent_scales
   public :: cvmix_kpp_compute_unresolved_shear
@@ -168,7 +173,9 @@
 
 !EOP
 
-type(cvmix_kpp_params_type), target :: CVmix_kpp_params_saved
+  type(cvmix_kpp_params_type), target    :: CVmix_kpp_params_saved
+  character(len=9),            parameter :: ModuleName = "cvmix_kpp"
+
 
 contains
 
@@ -177,10 +184,11 @@ contains
 ! !IROUTINE: cvmix_init_kpp
 ! !INTERFACE:
 
-  subroutine cvmix_init_kpp(ri_crit, vonkarman, Cstar, zeta_m, zeta_s,        &
-                            surf_layer_ext, Cv, interp_type, interp_type2,    &
-                            MatchTechnique, old_vals, lEkman, lMonOb,         &
-                            lnoDGat1, lavg_N_or_Nsqr, CVmix_kpp_params_user)
+  subroutine cvmix_init_kpp(MessageLog, ri_crit, vonkarman, Cstar, zeta_m,    &
+                            zeta_s, surf_layer_ext, Cv, interp_type,          &
+                            interp_type2, MatchTechnique, old_vals, lEkman,   &
+                            lMonOb, lnoDGat1, lavg_N_or_Nsqr,                 &
+                            CVmix_kpp_params_user)
 
 ! !DESCRIPTION:
 !  Initialization routine for KPP mixing.
@@ -208,12 +216,14 @@ contains
                                               lavg_N_or_Nsqr
 
 ! !OUTPUT PARAMETERS:
+    type(cvmix_message_type),    intent(inout), pointer          :: MessageLog
     type(cvmix_kpp_params_type), intent(inout), target, optional ::           &
                                               CVmix_kpp_params_user
 
 !EOP
 !BOC
 
+    character(len=14), parameter:: RoutineName = "cvmix_kpp_init"
     real(cvmix_r8) :: zm, zs, a_m, a_s, c_m, c_s
 
     if (present(ri_crit)) then
@@ -225,6 +235,8 @@ contains
     else
       call cvmix_put_kpp('Ri_crit', 0.3_cvmix_r8, CVmix_kpp_params_user)
     end if
+    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_real('Ri_crit'),        &
+                            'Ri_crit', ModuleName, RoutineName)
 
     if (present(vonkarman)) then
       if (vonkarman.lt.cvmix_zero) then
@@ -235,12 +247,16 @@ contains
     else
       call cvmix_put_kpp('vonkarman', 0.4_cvmix_r8, CVmix_kpp_params_user)
     end if
+    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_real('vonkarman'),      &
+                            "vonkarman", ModuleName, RoutineName)
 
     if (present(Cstar)) then
       call cvmix_put_kpp('Cstar', Cstar, CVmix_kpp_params_user)
     else
       call cvmix_put_kpp('Cstar', 10, CVmix_kpp_params_user)
     end if
+    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_real('Cstar'),          &
+                            "Cstar", ModuleName, RoutineName)
 
     if (present(zeta_m)) then
       if (zeta_m.ge.cvmix_zero) then
@@ -253,6 +269,7 @@ contains
       zm = -0.2_cvmix_r8
     end if
     call cvmix_put_kpp('zeta_m', zm, CVmix_kpp_params_user)
+    call cvmix_log_namelist(MessageLog, zm, "zeta_m", ModuleName, RoutineName)
 
     if (present(zeta_s)) then
       if (zeta_s.ge.cvmix_zero) then
@@ -265,22 +282,29 @@ contains
       zs = -cvmix_one
     end if
     call cvmix_put_kpp('zeta_s', zs, CVmix_kpp_params_user)
+    call cvmix_log_namelist(MessageLog, zs, "zeta_s", ModuleName, RoutineName)
 
     ! a_m, a_s, c_m, and c_s are computed from zeta_m and zeta_s
     ! a_m, c_m, and c_s are all non-negative. a_s may be negative depending
     ! on the value of zeta_s
     a_m = ((cvmix_one - real(16,cvmix_r8)*zm)**(-0.25_cvmix_r8))*             &
           (cvmix_one - real(4,cvmix_r8)*zm)
+    call cvmix_put_kpp('a_m', a_m, CVmix_kpp_params_user)
+    call cvmix_log_namelist(MessageLog, a_m, "a_m", ModuleName, RoutineName)
+
     c_m = ((cvmix_one - real(16,cvmix_r8)*zm)**(-0.25_cvmix_r8))*             &
           real(12,cvmix_r8)
-    call cvmix_put_kpp('a_m', a_m, CVmix_kpp_params_user)
     call cvmix_put_kpp('c_m', c_m, CVmix_kpp_params_user)
+    call cvmix_log_namelist(MessageLog, c_m, "c_m", ModuleName, RoutineName)
 
     a_s = sqrt(cvmix_one - real(16,cvmix_r8)*zs)*                             &
           (cvmix_one + real(8,cvmix_r8)*zs)
-    c_s = real(24,cvmix_r8)*sqrt(cvmix_one - real(16,cvmix_r8)*zs)
     call cvmix_put_kpp('a_s', a_s, CVmix_kpp_params_user)
+    call cvmix_log_namelist(MessageLog, a_s, "a_s", ModuleName, RoutineName)
+
+    c_s = real(24,cvmix_r8)*sqrt(cvmix_one - real(16,cvmix_r8)*zs)
     call cvmix_put_kpp('c_s', c_s, CVmix_kpp_params_user)
+    call cvmix_log_namelist(MessageLog, c_s, "c_s", ModuleName, RoutineName)
 
     if (present(surf_layer_ext)) then
       if ((surf_layer_ext.lt.cvmix_zero).or.(surf_layer_ext.gt.cvmix_one))    &
@@ -293,6 +317,8 @@ contains
     else
       call cvmix_put_kpp('surf_layer_ext', 0.1_cvmix_r8, CVmix_kpp_params_user)
     end if
+    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_real('surf_layer_ext'), &
+                            "surf_layer_ext", ModuleName, RoutineName)
 
     if (present(Cv)) then
       ! Use scalar Cv parameter
@@ -302,6 +328,10 @@ contains
       ! Use Eq. (A3) from Danabasoglu et al.
       call cvmix_put_kpp('lscalar_Cv', .false., CVmix_kpp_params_user)
     end if
+    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_real('Cv'),             &
+                            "Cv", ModuleName, RoutineName)
+    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_logical('lscalar_Cv'),  &
+                            "lscalar_Cv", ModuleName, RoutineName)
 
     if (present(interp_type)) then
       select case (trim(interp_type))
@@ -323,6 +353,8 @@ contains
       call cvmix_put_kpp('interp_type', CVMIX_MATH_INTERP_QUAD,               &
                          CVmix_kpp_params_user)
     end if
+    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_str('interp_type'),     &
+                            'interp_type', ModuleName, RoutineName)
 
     if (present(interp_type2)) then
       select case (trim(interp_type2))
@@ -347,6 +379,8 @@ contains
       call cvmix_put_kpp('interp_type2', CVMIX_KPP_INTERP_LMD94,              &
                          CVmix_kpp_params_user)
     end if
+    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_str('interp_type2'),    &
+                            'interp_type2', ModuleName, RoutineName)
 
     if (present(MatchTechnique)) then
       select case (trim(MatchTechnique))
@@ -371,6 +405,8 @@ contains
       call cvmix_put_kpp('MatchTechnique', CVMIX_KPP_SIMPLE_SHAPES,           &
                          CVmix_kpp_params_user)
     end if
+    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_str('MatchTechnique'),  &
+                            'MatchTechnique', ModuleName, RoutineName)
 
     if (present(old_vals)) then
       select case (trim(old_vals))
@@ -392,30 +428,41 @@ contains
       call cvmix_put_kpp('handle_old_vals', CVMIX_OVERWRITE_OLD_VAL,          &
                                cvmix_kpp_params_user)
     end if
+    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_str('handle_old_vals'), &
+                            'handle_old_vals', ModuleName, RoutineName)
 
     if (present(lEkman)) then
       call cvmix_put_kpp('lEkman', lEkman, CVmix_kpp_params_user)
     else
       call cvmix_put_kpp('lEkman', .false., CVmix_kpp_params_user)
     end if
+    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_logical('lEkman'),      &
+                            "lEkman", ModuleName, RoutineName)
 
     if (present(lMonOb)) then
       call cvmix_put_kpp('lMonOb', lMonOb, CVmix_kpp_params_user)
     else
       call cvmix_put_kpp('lMonOb', .false., CVmix_kpp_params_user)
     end if
+    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_logical('lMonOb'),      &
+                            "lMonOb", ModuleName, RoutineName)
 
     if (present(lnoDGat1)) then
       call cvmix_put_kpp('lnoDGat1', lnoDGat1, CVmix_kpp_params_user)
     else
       call cvmix_put_kpp('lnoDGat1', .true., CVmix_kpp_params_user)
     end if
+    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_logical('lnoDGat1'),    &
+                            "lnoDGat1", ModuleName, RoutineName)
 
     if (present(lavg_N_or_Nsqr)) then
       call cvmix_put_kpp('lavg_N_or_Nsqr', lavg_N_or_Nsqr,                    &
                          CVmix_kpp_params_user)
     else
       call cvmix_put_kpp('lavg_N_or_Nsqr', .false., CVmix_kpp_params_user)
+    call cvmix_log_namelist(MessageLog,                                       &
+                            cvmix_get_kpp_logical('lavg_N_or_Nsqr'),          &
+                            "lavg_N_or_Nsqr", ModuleName, RoutineName)
     end if
 
 !EOC
@@ -1080,7 +1127,7 @@ contains
 ! !DESCRIPTION:
 !  Return the real value of a cvmix\_kpp\_params\_type variable.
 !  NOTE: This function is not efficient and is only for infrequent
-!  queries of ddiff parameters, such as at initialization.
+!  queries of kpp parameters, such as at initialization.
 !\\
 !\\
 
@@ -1137,6 +1184,160 @@ contains
 !EOC
 
   end function cvmix_get_kpp_real
+
+!BOP
+
+! !IROUTINE: cvmix_get_kpp_logical
+! !INTERFACE:
+
+  function cvmix_get_kpp_logical(varname, CVmix_kpp_params_user)
+
+! !DESCRIPTION:
+!  Return the logical value of a cvmix\_kpp\_params\_type variable.
+!  NOTE: This function is not efficient and is only for infrequent
+!  queries of kpp parameters, such as at initialization.
+!\\
+!\\
+
+! !USES:
+!  Only those used by entire module. 
+
+! !INPUT PARAMETERS:
+    character(len=*),                              intent(in) :: varname
+    type(cvmix_kpp_params_type), optional, target, intent(in) ::              &
+                                           CVmix_kpp_params_user
+
+! !OUTPUT PARAMETERS:
+    logical :: cvmix_get_kpp_logical
+
+!EOP
+!BOC
+
+    type(cvmix_kpp_params_type), pointer :: CVmix_kpp_params_get
+
+    CVmix_kpp_params_get => CVmix_kpp_params_saved
+    if (present(CVmix_kpp_params_user)) then
+      CVmix_kpp_params_get => CVmix_kpp_params_user
+    end if
+
+    cvmix_get_kpp_logical = .false.
+    select case (trim(varname))
+      case ('lscalar_Cv')
+        cvmix_get_kpp_logical = CVmix_kpp_params_get%lscalar_Cv
+      case ('lEkman')
+        cvmix_get_kpp_logical = CVmix_kpp_params_get%lEkman
+      case ('lMonOb')
+        cvmix_get_kpp_logical = CVmix_kpp_params_get%lMonOb
+      case ('lnoDGat1')
+        cvmix_get_kpp_logical = CVmix_kpp_params_get%lnoDGat1
+      case ('lavg_N_or_Nsqr')
+        cvmix_get_kpp_logical = CVmix_kpp_params_get%lavg_N_or_Nsqr
+      case DEFAULT
+        print*, "ERROR: ", trim(varname), " not a valid choice!"
+        stop 1
+    end select
+
+!EOC
+
+  end function cvmix_get_kpp_logical
+
+!BOP
+
+! !IROUTINE: cvmix_get_kpp_str
+! !INTERFACE:
+
+  function cvmix_get_kpp_str(varname, CVmix_kpp_params_user)
+
+! !DESCRIPTION:
+!  Return the string value of a cvmix\_kpp\_params\_type variable.
+!  NOTE: This function is not efficient and is only for infrequent
+!  queries of kpp parameters, such as at initialization.
+!\\
+!\\
+
+! !USES:
+!  Only those used by entire module. 
+
+! !INPUT PARAMETERS:
+    character(len=*),                              intent(in) :: varname
+    type(cvmix_kpp_params_type), optional, target, intent(in) ::              &
+                                           CVmix_kpp_params_user
+
+! !OUTPUT PARAMETERS:
+    character(len=cvmix_strlen) :: cvmix_get_kpp_str
+
+!EOP
+!BOC
+
+    type(cvmix_kpp_params_type), pointer :: CVmix_kpp_params_get
+
+    CVmix_kpp_params_get => CVmix_kpp_params_saved
+    if (present(CVmix_kpp_params_user)) then
+      CVmix_kpp_params_get => CVmix_kpp_params_user
+    end if
+
+    cvmix_get_kpp_str = ""
+    select case (trim(varname))
+      case ('interp_type')
+        select case (CVmix_kpp_params_get%interp_type)
+          case (CVMIX_MATH_INTERP_LINEAR)
+            cvmix_get_kpp_str = "linear"
+          case (CVMIX_MATH_INTERP_QUAD)
+            cvmix_get_kpp_str = "linear"
+          case (CVMIX_MATH_INTERP_CUBE_SPLINE)
+            cvmix_get_kpp_str = "cubic spline"
+          case DEFAULT
+            print*, "ERROR: Don't recognize interpolation type!"
+            stop 1
+        end select
+      case ('interp_type2')
+        select case (CVmix_kpp_params_get%interp_type2)
+          case (CVMIX_MATH_INTERP_LINEAR)
+            cvmix_get_kpp_str = "linear"
+          case (CVMIX_MATH_INTERP_QUAD)
+            cvmix_get_kpp_str = "linear"
+          case (CVMIX_MATH_INTERP_CUBE_SPLINE)
+            cvmix_get_kpp_str = "cubic spline"
+          case (CVMIX_KPP_INTERP_LMD94)
+            cvmix_get_kpp_str = "LMD94"
+          case DEFAULT
+            print*, "ERROR: Don't recognize interpolation type!"
+            stop 1
+        end select
+      case ('MatchTechnique')
+        select case (CVmix_kpp_params_get%MatchTechnique)
+          case (CVMIX_KPP_MATCH_BOTH)
+            cvmix_get_kpp_str = 'MatchBoth'
+          case (CVMIX_KPP_MATCH_GRADIENT)
+            cvmix_get_kpp_str = 'MatchGradient'
+          case (CVMIX_KPP_SIMPLE_SHAPES)
+            cvmix_get_kpp_str = 'SimpleShapes'
+          case (CVMIX_KPP_PARABOLIC_NONLOCAL)
+            cvmix_get_kpp_str = 'ParabolicNonLocal'
+          case DEFAULT
+            print*, "ERROR: Don't recognize match technique!"
+            stop 1
+        end select
+      case ('handle_old_vals')
+        select case (CVmix_kpp_params_get%handle_old_vals)
+          case (CVMIX_OVERWRITE_OLD_VAL)
+            cvmix_get_kpp_str = 'overwrite'
+          case (CVMIX_SUM_OLD_AND_NEW_VALS)
+            cvmix_get_kpp_str = 'sum'
+          case (CVMIX_MAX_OLD_AND_NEW_VALS)
+            cvmix_get_kpp_str = 'max'
+          case DEFAULT
+            print*, "ERROR: Don't recognize how to handle old values!"
+            stop 1
+          end select
+      case DEFAULT
+        print*, "ERROR: ", trim(varname), " not a valid choice!"
+        stop 1
+    end select
+
+!EOC
+
+  end function cvmix_get_kpp_str
 
 !BOP
 
