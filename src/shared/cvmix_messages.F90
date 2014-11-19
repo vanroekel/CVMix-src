@@ -162,8 +162,7 @@ contains
       self%ModuleName     = ModuleName
       self%SubroutineName = SubroutineName
     else
-      deallocate(self)
-      nullify(self)
+      call cvmix_erase_log(self)
     end if
 
 !EOC
@@ -275,8 +274,7 @@ contains
                        ModuleName, RoutineName)
 
     call cvmix_message_append(self, NewEntry)
-    deallocate(NewEntry)
-    nullify(NewEntry)
+    call cvmix_erase_log(NewEntry)
 
 !EOC
 
@@ -313,8 +311,7 @@ contains
                        ModuleName, RoutineName)
 
     call cvmix_message_append(self, NewEntry)
-    deallocate(NewEntry)
-    nullify(NewEntry)
+    call cvmix_erase_log(NewEntry)
 
 !EOC
 
@@ -351,8 +348,7 @@ contains
                        ModuleName, RoutineName)
 
     call cvmix_message_append(self, NewEntry)
-    deallocate(NewEntry)
-    nullify(NewEntry)
+    call cvmix_erase_log(NewEntry)
 
 !EOC
 

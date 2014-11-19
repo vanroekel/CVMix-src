@@ -8,7 +8,7 @@ module cvmix_background_drv
 !  Michael N. Levy, NCAR (mlevy@ucar.edu)
 !
 ! !DESCRIPTION:
-!  This module contains tests various routines the  cvmix\_background module.
+!  This module tests various routines the  cvmix\_background module.
 !\\
 !\\
 
@@ -48,7 +48,7 @@ module cvmix_background_drv
 contains
 
 !BOP
-! !ROUTINE: cvmix_BL_driver
+! !IROUTINE: cvmix_BL_driver
 
 ! !DESCRIPTION: A routine to test the Bryan-Lewis implementation of static
 !  background mixing. Inputs are BL coefficients in two columns, one that
@@ -60,7 +60,7 @@ contains
 
 ! !INTERFACE:
 
-  Subroutine cvmix_BL_driver(nlev, max_nlev, ocn_depth, CVMixLog)
+  subroutine cvmix_BL_driver(nlev, max_nlev, ocn_depth, CVMixLog)
 
 ! !INPUT PARAMETERS:
     integer,        intent(in) :: nlev,        &! number of levels for column
@@ -224,6 +224,6 @@ contains
 
 !EOC
 
-  End Subroutine cvmix_BL_driver
+  end subroutine cvmix_BL_driver
 
-End Module cvmix_background_drv
+end module cvmix_background_drv

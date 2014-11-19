@@ -34,6 +34,7 @@ Program cvmix_driver
                                     cvmix_message_append,                     &
                                     cvmix_log_namelist
   use cvmix_background_drv,  only : cvmix_BL_driver
+  use cvmix_kpp_drv,         only : cvmix_kpp_driver
   use cvmix_log_drv,         only : cvmix_log_driver
   use cvmix_io,              only : cvmix_print_log
 
