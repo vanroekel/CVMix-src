@@ -31,7 +31,8 @@ Program cvmix_driver
                                     cvmix_status,                             &
                                     cvmix_new_log,                            &
                                     cvmix_erase_log,                          &
-                                    cvmix_message_append
+                                    cvmix_message_append,                     &
+                                    cvmix_log_namelist
   use cvmix_background_drv,  only : cvmix_BL_driver
   use cvmix_log_drv,         only : cvmix_log_driver
   use cvmix_io,              only : cvmix_print_log
@@ -71,7 +72,7 @@ Program cvmix_driver
       call cvmix_message_init(cvmix_status%Error)
     case DEFAULT
       call cvmix_message_init()
-      write(Message,'(A, A)') trim(Verbosity), " is not a valid choice for Verbosity"
+      write(Message,'(2A)') trim(Verbosity), " is not a valid Verbosity"
       call cvmix_new_log(SingleLog, cvmix_status%Error, trim(Message),        &
                          "Main", "cvmix_driver")
       call cvmix_message_append(CVMixLog, SingleLog)
@@ -80,16 +81,18 @@ Program cvmix_driver
   call cvmix_print_log(CVMixLog)
   call cvmix_erase_log(CVMixLog)
 
-  write(Message, '(A,I0)') "Active Levels: ", nlev
-  call cvmix_new_log(SingleLog, cvmix_status%EchoNamelist, trim(Message),     &
-                     "Main", "cvmix_driver")
-  call cvmix_message_append(CVMixLog, SingleLog)
-  call cvmix_erase_log(SingleLog)
-  write(Message, '(A,I0)') "Levels allocated in memory: ", max_nlev
-  call cvmix_new_log(SingleLog, cvmix_status%EchoNamelist, trim(Message),     &
-                     "Main", "cvmix_driver")
-  call cvmix_message_append(CVMixLog, SingleLog)
-  call cvmix_erase_log(SingleLog)
+  call cvmix_log_namelist(CVMixLog, mix_type, "mix_type", "Main",             &
+                          "cvmix_driver")
+  call cvmix_log_namelist(CVMixLog, nlev, "nlev", "Main", "cvmix_driver")
+  call cvmix_log_namelist(CVMixLog, max_nlev, "max_nlev", "Main",             &
+                          "cvmix_driver")
+  call cvmix_log_namelist(CVMixLog, ocn_depth, "ocn_depth", "Main",           &
+                          "cvmix_driver")
+  call cvmix_log_namelist(CVMixLog, Verbosity, "Verbosity", "Main",           &
+                          "cvmix_driver")
+                     
+  call cvmix_print_log(CVMixLog)
+  call cvmix_erase_log(CVMixLog)
 
   select case (trim(mix_type))
     case ('BryanLewis')
@@ -105,9 +108,20 @@ Program cvmix_driver
     case ('log')
       call cvmix_log_driver()
     case DEFAULT
-      print*, "WARNING: mix_type = '", trim(mix_type), "' is not supported by this driver."
+      write(Message, "(A,A,A)") "mix_type = '", trim(mix_type),               &
+                                "' is not supported by this driver."
+      call cvmix_new_log(SingleLog, cvmix_status%Error, trim(Message),        &
+                         "Main", "cvmix_driver")
+      call cvmix_message_append(CVMixLog, SingleLog)
+      call cvmix_erase_log(SingleLog)
   end select
 
+  write(Message, "(A,A)") "Completed run with mix_type = ", trim(mix_type)
+  call cvmix_new_log(SingleLog, cvmix_status%Verbose, trim(Message), "Main",  &
+                     "cvmix_driver")
+  call cvmix_message_append(CVMixLog, SingleLog)
+  call cvmix_erase_log(SingleLog)
   call cvmix_print_log(CVMixLog)
+  call cvmix_erase_log(CVMixLog)
 
 End Program cvmix_driver

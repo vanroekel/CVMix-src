@@ -5,7 +5,7 @@ DRIVE=$SRC/drivers
 SHARE=$SRC/shared
 f90pdf                                       \
        $SRC/cvmix_driver.F90                 \
-       $DRIVE/cvmix_bgrnd_BL.F90             \
+       $DRIVE/cvmix_background_drv.F90       \
        $DRIVE/cvmix_shear_drv.F90            \
        $DRIVE/cvmix_tidal_Simmons.F90        \
        $DRIVE/cvmix_ddiff_drv.F90            \

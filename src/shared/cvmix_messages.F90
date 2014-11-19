@@ -14,7 +14,8 @@ module cvmix_messages
 !\\
 
 ! !USES:
-  use cvmix_kinds_and_types, only : cvmix_strlen,                             &
+  use cvmix_kinds_and_types, only : cvmix_r8,                                 &
+                                    cvmix_strlen,                             & 
                                     cvmix_message_type
 
 !EOP
@@ -47,6 +48,13 @@ module cvmix_messages
   public :: cvmix_new_log
   public :: cvmix_message_append
   public :: cvmix_erase_log
+  public :: cvmix_log_namelist
+
+  interface cvmix_log_namelist
+    module procedure cvmix_log_namelist_int
+    module procedure cvmix_log_namelist_r8
+    module procedure cvmix_log_namelist_str
+  end interface cvmix_log_namelist
 
   interface cvmix_new_log
     module procedure cvmix_new_log_copy
@@ -235,5 +243,119 @@ contains
 !EOC
 
   end subroutine cvmix_erase_log
+
+!BOP
+
+! !IROUTINE: cvmix_log_namelist_r8
+! !INTERFACE:
+
+  subroutine cvmix_log_namelist_r8(self, val, VarName, ModuleName,            &
+                                   RoutineName)
+
+! !DESCRIPTION:
+!  Prints "varname = val" to log for real val
+!\\
+!\\
+
+! !INPUT PARAMETERS:
+    type(cvmix_message_type), pointer, intent(inout) :: self
+    real(cvmix_r8),                    intent(in)    :: val
+    character(len=*),                  intent(in)    :: VarName, ModuleName,  &
+                                                        RoutineName
+
+!EOP
+!BOC
+
+    type(cvmix_message_type), pointer :: NewEntry
+    character(len=cvmix_strlen)       :: Message
+
+    write(Message, "(2A,E10.3E2)") trim(VarName), " = ", val
+
+    call cvmix_new_log(NewEntry, cvmix_status%EchoNamelist, Message,          &
+                       ModuleName, RoutineName)
+
+    call cvmix_message_append(self, NewEntry)
+    deallocate(NewEntry)
+    nullify(NewEntry)
+
+!EOC
+
+  end subroutine cvmix_log_namelist_r8
+
+!BOP
+
+! !IROUTINE: cvmix_log_namelist_int
+! !INTERFACE:
+
+  subroutine cvmix_log_namelist_int(self, val, VarName, ModuleName,           &
+                                    RoutineName)
+
+! !DESCRIPTION:
+!  Prints "varname = val" to log for integer val
+!\\
+!\\
+
+! !INPUT PARAMETERS:
+    type(cvmix_message_type), pointer, intent(inout) :: self
+    integer,                           intent(in)    :: val
+    character(len=*),                  intent(in)    :: VarName, ModuleName,  &
+                                                        RoutineName
+
+!EOP
+!BOC
+
+    type(cvmix_message_type), pointer :: NewEntry
+    character(len=cvmix_strlen)       :: Message
+
+    write(Message, "(2A,I0)") trim(VarName), " = ", val
+
+    call cvmix_new_log(NewEntry, cvmix_status%EchoNamelist, Message,          &
+                       ModuleName, RoutineName)
+
+    call cvmix_message_append(self, NewEntry)
+    deallocate(NewEntry)
+    nullify(NewEntry)
+
+!EOC
+
+  end subroutine cvmix_log_namelist_int
+
+!BOP
+
+! !IROUTINE: cvmix_log_namelist_str
+! !INTERFACE:
+
+  subroutine cvmix_log_namelist_str(self, val, VarName, ModuleName,           &
+                                    RoutineName)
+
+! !DESCRIPTION:
+!  Prints "varname = val" to log for string val
+!\\
+!\\
+
+! !INPUT PARAMETERS:
+    type(cvmix_message_type), pointer, intent(inout) :: self
+    character(len=*),                  intent(in)    :: val
+    character(len=*),                  intent(in)    :: VarName, ModuleName,  &
+                                                        RoutineName
+
+!EOP
+!BOC
+
+    type(cvmix_message_type), pointer :: NewEntry
+    character(len=cvmix_strlen)       :: Message
+
+    write(Message, "(4A)") trim(VarName), " = '", trim(val), "'"
+
+    call cvmix_new_log(NewEntry, cvmix_status%EchoNamelist, Message,          &
+                       ModuleName, RoutineName)
+
+    call cvmix_message_append(self, NewEntry)
+    deallocate(NewEntry)
+    nullify(NewEntry)
+
+!EOC
+
+  end subroutine cvmix_log_namelist_str
 
 end module cvmix_messages

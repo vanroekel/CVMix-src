@@ -36,10 +36,7 @@ module cvmix_background
                                     CVMIX_MAX_OLD_AND_NEW_VALS
   use cvmix_put_get,         only : cvmix_put
   use cvmix_utils,           only : cvmix_update_wrap
-  use cvmix_messages,        only : cvmix_new_log,                            &
-                                    cvmix_erase_log,                          &
-                                    cvmix_message_append,                     &
-                                    cvmix_status
+  use cvmix_messages,        only : cvmix_log_namelist
 
 !EOP
 
@@ -428,10 +425,6 @@ contains
     ! Pointers to parameter data type
     type(cvmix_bkgnd_params_type),  pointer :: CVmix_bkgnd_params_out
 
-    ! Pointer for new log entry
-    type(cvmix_message_type), pointer :: NewMessage
-    character(len=cvmix_strlen)       :: Message
-
     ! Local index
     integer :: i,nlev  ! max number of levels
 
@@ -453,24 +446,21 @@ contains
       deallocate(CVmix_bkgnd_params_out%static_Tdiff)
 
     ! Update Log
-    nullify(NewMessage)
     do i=1,4
       select case (i)
         case (1)
-          write(Message, "(A,E10.3E2)") "vdc1 = ", bl1
+          call cvmix_log_namelist(MessageLog, bl1, "vdc1", ModuleName,        &
+                                  "cvmix_init_bkgnd_BryanLewis")
         case (2)
-          write(Message, "(A,E10.3E2)") "vdc2 = ", bl2
+          call cvmix_log_namelist(MessageLog, bl2, "vdc2", ModuleName,        &
+                                  "cvmix_init_bkgnd_BryanLewis")
         case (3)
-          write(Message, "(A,E10.3E2)") "linv = ", bl3
+          call cvmix_log_namelist(MessageLog, bl3, "linv", ModuleName,        &
+                                  "cvmix_init_bkgnd_BryanLewis")
         case (4)
-          write(Message, "(A,E10.3E2)") "dpth = ", bl4
+          call cvmix_log_namelist(MessageLog, bl4, "dpth", ModuleName,        &
+                                  "cvmix_init_bkgnd_BryanLewis")
       end select
-      call cvmix_new_log(NewMessage, cvmix_status%EchoNamelist, trim(Message),&
-                         trim(ModuleName), trim(RoutineName))
-      call cvmix_message_append(MessageLog, NewMessage)
-      if (associated(NewMessage)) then
-        call cvmix_erase_log(NewMessage)
-      end if
     end do
 
     ! Set static_[MT]diff in background_input_type

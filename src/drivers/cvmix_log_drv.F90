@@ -53,62 +53,76 @@ contains
 !EOP
 !BOC
 
-    type(cvmix_message_type), pointer :: rootlog, nextlog, thirdlog
+    type(cvmix_message_type), pointer :: rootlog, log2, log3
     integer :: i
 
     nullify(rootlog)
-    nullify(nextlog)
-    nullify(thirdlog)
+    nullify(log2)
+    nullify(log3)
 
     ! Create initial log type
     do i=0,1
       if (i.eq.0) then
-        write(*,"(A)") "Logging without running cvmix_message_init..."
+        write(*,"(A)") "cvmix_message_init has not been run..."
       else
+        call cvmix_message_init(0)
         write(*,"(A)") ""
-        write(*,"(A)") "Logging after running cvmix_message_init(0)"
+        write(*,"(A)") "called cvmix_message_init(0)"
       end if
-      call cvmix_new_log(rootlog) 
+
+      ! Print an empty log (should be empty, should not seg fault!)
+      write(*,"(A)") "Printing contents of [empty] log:"
+      call cvmix_print_log(rootlog,  StopOnError=.false.)
+      call cvmix_print_log(log2,  StopOnError=.false.)
+      call cvmix_print_log(log3, StopOnError=.false.)
+      call cvmix_new_log(rootlog)
+
+      ! Set rootlog by hand
       rootlog%StatusCode     = cvmix_status%Verbose
-      rootlog%Message        = "This message was manually entered"
+      rootlog%Message        = "Manually entered messsage in rootlog with" // &
+                               " status level Verbose"
       rootlog%ModuleName     = "cvmix_log_drv" 
       rootlog%SubroutineName = "cvmix_log_driver"
-      call cvmix_new_log(nextlog, cvmix_status%Diagnostic,                    &
-                         "Verbose message called through cvmix_new_log",      &
+
+      ! Set log2 using cvmix_new_log interface
+      ! Note that if cvmix_messages::MinMessageLevel > Diagnostic (as is the
+      ! case if cvmix_message_init has not been called) then this does not
+      ! touch log2.
+      call cvmix_new_log(log2, cvmix_status%Diagnostic, "Message with " // &
+                         "status level Diagnostic entered via cvmix_new_log", &
                          "cvmix_log_drv", "cvmix_log_driver")
+      if (i.eq.0) then
+        ! log2 should still be empty!
+        call cvmix_print_log(log2)
+      end if
 
       ! Create a new log entry that is identical to the entry we just created
-      ! Then manually change a couple of values
-      call cvmix_new_log(thirdlog, nextlog)
-      if (associated(thirdlog)) then
-        thirdlog%StatusCode = cvmix_status%Warning
-        thirdlog%Message    = "Warning message if nextlog exists"
+      call cvmix_new_log(log3, log2)
+      ! If log2 was not NULL (i.e. MinMessageLevel<=Diagnostic), change a
+      ! few values in the copy we just made; otherwise log3 is also NULL
+      if (associated(log3)) then
+        log3%StatusCode = cvmix_status%Warning
+        log3%Message    = "Not a real warning message (but log3 exists)"
       end if
 
       ! Link messages together
-      call cvmix_message_append(rootlog, nextlog)
-      call cvmix_message_append(rootlog, thirdlog)
-      call cvmix_erase_log(thirdlog)
-      if (associated(nextlog)) then
-        nextlog%StatusCode = cvmix_status%Error
-        nextlog%Message    = "Error message if nextlog exists"
-        call cvmix_message_append(rootlog, nextlog)
-        call cvmix_erase_log(nextlog)
+      call cvmix_message_append(rootlog, log2)
+      call cvmix_message_append(rootlog, log3)
+      call cvmix_erase_log(log3)
+      if (associated(log2)) then
+        log2%StatusCode = cvmix_status%Error
+        log2%Message    = "Not a real error message (but log2 exists)"
+        call cvmix_message_append(rootlog, log2)
+        call cvmix_erase_log(log2)
       end if
+      call cvmix_message_append(rootlog, log2)
+      call cvmix_erase_log(log2)
 
       write(*,"(A)") "Printing contents of log:"
       write(*,"(A)") "----"
       call cvmix_print_log(rootlog, StopOnError=.false.)
       call cvmix_erase_log(rootlog)
-      call cvmix_print_log(nextlog, StopOnError=.false.)
-      call cvmix_erase_log(nextlog)
       write(*,"(A)") "----"
-      write(*,"(A)") "Printing contents of [empty] log:"
-      ! Should be empty (and should not seg-fault)
-      call cvmix_print_log(rootlog,  StopOnError=.false.)
-      call cvmix_print_log(nextlog,  StopOnError=.false.)
-      call cvmix_print_log(thirdlog, StopOnError=.false.)
-      call cvmix_message_init(0)
     end do
 
 !EOC
