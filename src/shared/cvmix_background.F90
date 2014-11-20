@@ -104,7 +104,6 @@ module cvmix_background
 
   type(cvmix_bkgnd_params_type), target :: CVmix_bkgnd_params_saved
   character(len=cvmix_strlen)           :: ModuleName = "cvmix_background"
-  character(len=cvmix_strlen)           :: RoutineName
 
 contains
 
@@ -113,8 +112,8 @@ contains
 ! !IROUTINE: cvmix_init_bkgnd_scalar
 ! !INTERFACE:
 
-  subroutine cvmix_init_bkgnd_scalar(bkgnd_Tdiff, bkgnd_Mdiff, old_vals,      &
-                                     CVmix_bkgnd_params_user)
+  subroutine cvmix_init_bkgnd_scalar(MessageLog, bkgnd_Tdiff, bkgnd_Mdiff,    &
+                                     old_vals, CVmix_bkgnd_params_user)
 
 ! !DESCRIPTION:
 !  Initialization routine for static background mixing coefficients. For each
@@ -132,13 +131,16 @@ contains
     character(len=*), optional, intent(in) :: old_vals
 
 ! !OUTPUT PARAMETERS:
-    type(cvmix_bkgnd_params_type), optional, target, intent(inout) :: &
-                                              CVmix_bkgnd_params_user
+    type(cvmix_message_type),      intent(inout), pointer :: MessageLog
+    type(cvmix_bkgnd_params_type), intent(inout), target,  optional ::        &
+                                               CVmix_bkgnd_params_user
 
 !EOP
 !BOC
 
     type(cvmix_bkgnd_params_type), pointer :: CVmix_bkgnd_params_out
+
+    character(len=23), parameter :: RoutineName = "cvmix_init_bkgnd_scalar"
 
     CVmix_bkgnd_params_out => CVmix_bkgnd_params_saved
     if (present(CVmix_bkgnd_params_user)) then
@@ -152,8 +154,14 @@ contains
       deallocate(CVmix_bkgnd_params_out%static_Tdiff)
 
     ! Set static_Mdiff and static_Tdiff in background_input_type
-    call cvmix_put_bkgnd('static_Mdiff', bkgnd_Mdiff, CVmix_bkgnd_params_user)
-    call cvmix_put_bkgnd('static_Tdiff', bkgnd_Tdiff, CVmix_bkgnd_params_user)
+    call cvmix_put_bkgnd('static_Mdiff', bkgnd_Mdiff,                         &
+                         CVmix_bkgnd_params_user, MessageLog)
+    call cvmix_put_bkgnd('static_Tdiff', bkgnd_Tdiff,                         &
+                         CVmix_bkgnd_params_user, MessageLog)
+    call cvmix_log_namelist(MessageLog, .false., "lvary_horizontal",          &
+                            ModuleName, RoutineName)
+    call cvmix_log_namelist(MessageLog, .false., "lvary_vertical",            &
+                            ModuleName, RoutineName)
 
     if (present(old_vals)) then
       select case (trim(old_vals))
@@ -185,8 +193,9 @@ contains
 ! !IROUTINE: cvmix_init_bkgnd_1D
 ! !INTERFACE:
 
-  subroutine cvmix_init_bkgnd_1D(bkgnd_Tdiff, bkgnd_Mdiff, ncol, old_vals,    &
-                                 CVmix_params_user, CVmix_bkgnd_params_user)
+  subroutine cvmix_init_bkgnd_1D(MessageLog, bkgnd_Tdiff, bkgnd_Mdiff, ncol,  &
+                                 old_vals, CVmix_params_user,                 &
+                                 CVmix_bkgnd_params_user)
 
 ! !DESCRIPTION:
 !  Initialization routine for static background mixing coefficients. For each
@@ -203,11 +212,12 @@ contains
     real(cvmix_r8), dimension(:),          intent(in) :: bkgnd_Mdiff
     integer,                     optional, intent(in) :: ncol
     character(len=cvmix_strlen), optional, intent(in) :: old_vals
-    type(cvmix_global_params_type), optional, target, intent(in) :: &
+    type(cvmix_global_params_type), optional, target, intent(in) ::           &
                                                   CVmix_params_user
 
 ! !OUTPUT PARAMETERS:
-    type(cvmix_bkgnd_params_type),  optional, target, intent(inout) :: &
+    type(cvmix_message_type),      intent(inout), pointer :: MessageLog
+    type(cvmix_bkgnd_params_type), intent(inout), target, optional ::         &
                                                CVmix_bkgnd_params_user
 !EOP
 !BOC
@@ -216,6 +226,7 @@ contains
     integer :: nlev
     type(cvmix_global_params_type), pointer :: CVmix_params_in
     type(cvmix_bkgnd_params_type),  pointer :: CVmix_bkgnd_params_out
+    character(len=19), parameter :: RoutineName = "cvmix_init_bkgnd_1D"
 
     nullify(CVmix_params_in)
     if (present(CVmix_params_user)) then
@@ -248,11 +259,19 @@ contains
                            CVmix_bkgnd_params_user, ncol=ncol)
       call cvmix_put_bkgnd('static_Tdiff', bkgnd_Tdiff,                       &
                            CVmix_bkgnd_params_user, ncol=ncol)
+      call cvmix_log_namelist(MessageLog, .true.,  "lvary_horizontal",        &
+                              ModuleName, RoutineName)
+      call cvmix_log_namelist(MessageLog, .false., "lvary_vertical",          &
+                              ModuleName, RoutineName)
     else
       call cvmix_put_bkgnd('static_Mdiff', bkgnd_Mdiff,                       &
                            CVmix_bkgnd_params_user, nlev=nlev)
       call cvmix_put_bkgnd('static_Tdiff', bkgnd_Tdiff,                       &
                            CVmix_bkgnd_params_user, nlev=nlev)
+      call cvmix_log_namelist(MessageLog, .false., "lvary_horizontal",        &
+                              ModuleName, RoutineName)
+      call cvmix_log_namelist(MessageLog, .true.,  "lvary_vertical",          &
+                              ModuleName, RoutineName)
     end if
 
     if (present(old_vals)) then
@@ -285,7 +304,7 @@ contains
 ! !IROUTINE: cvmix_init_bkgnd_2D
 ! !INTERFACE:
 
-  subroutine cvmix_init_bkgnd_2D(bkgnd_Tdiff, bkgnd_Mdiff, ncol,              &
+  subroutine cvmix_init_bkgnd_2D(MessageLog, bkgnd_Tdiff, bkgnd_Mdiff, ncol,  &
                                  CVmix_params_in, old_vals,                   &
                                  CVmix_bkgnd_params_user)
 
@@ -307,7 +326,8 @@ contains
     type(cvmix_global_params_type),        intent(in) :: CVmix_params_in
 
 ! !OUTPUT PARAMETERS:
-    type(cvmix_bkgnd_params_type),  target, optional, intent(inout) ::        &
+    type(cvmix_message_type),      intent(inout), pointer :: MessageLog
+    type(cvmix_bkgnd_params_type), intent(inout), target, optional ::         &
                                                CVmix_bkgnd_params_user
 !EOP
 !BOC
@@ -315,6 +335,7 @@ contains
     ! local vars
     integer :: nlev
     type(cvmix_bkgnd_params_type),  pointer :: CVmix_bkgnd_params_out
+    character(len=19), parameter :: RoutineName = "cvmix_init_bkgnd_2D"
 
     CVmix_bkgnd_params_out => CVmix_bkgnd_params_saved
     if (present(CVmix_bkgnd_params_user)) then
@@ -336,6 +357,10 @@ contains
                          CVmix_bkgnd_params_user)
     call cvmix_put_bkgnd("static_Tdiff", bkgnd_Tdiff, ncol, nlev,             &
                          CVmix_bkgnd_params_user)
+    call cvmix_log_namelist(MessageLog, .true., "lvary_horizontal",           &
+                            ModuleName, RoutineName)
+    call cvmix_log_namelist(MessageLog, .true., "lvary_vertical",             &
+                            ModuleName, RoutineName)
  
     if (present(old_vals)) then
       select case (trim(old_vals))
@@ -430,8 +455,8 @@ contains
 
     ! Local copies to make code easier to read
     real(cvmix_r8), dimension(CVmix_params_in%max_nlev+1) :: Mdiff, Tdiff, zw
+    character(len=27), parameter ::RoutineName = "cvmix_init_bkgnd_BryanLewis"
 
-    RoutineName = "cvmix_init_bkgnd_BryanLewis"
     CVmix_bkgnd_params_out => CVmix_bkgnd_params_saved
     if (present(CVmix_bkgnd_params_user)) then
       CVmix_bkgnd_params_out => CVmix_bkgnd_params_user
@@ -493,6 +518,11 @@ contains
       call cvmix_put_bkgnd('handle_old_vals', CVMIX_OVERWRITE_OLD_VAL,        &
                                cvmix_bkgnd_params_user)
     end if
+
+    call cvmix_log_namelist(MessageLog, .false., "lvary_horizontal",          &
+                            ModuleName, RoutineName)
+    call cvmix_log_namelist(MessageLog, .true.,  "lvary_vertical",            &
+                            ModuleName, RoutineName)
 
 !EOC
 
@@ -821,7 +851,8 @@ contains
 ! !IROUTINE: cvmix_put_bkgnd_real
 ! !INTERFACE:
 
-  subroutine cvmix_put_bkgnd_real(varname, val, CVmix_bkgnd_params_user)
+  subroutine cvmix_put_bkgnd_real(varname, val, CVmix_bkgnd_params_user,      &
+                                  MessageLog)
 
 ! !DESCRIPTION:
 !  Write a real value into a cvmix\_bkgnd\_params\_type variable.
@@ -836,13 +867,17 @@ contains
     real(cvmix_r8),   intent(in) :: val
 
 ! !OUTPUT PARAMETERS:
-    type(cvmix_bkgnd_params_type), target, optional, intent(inout) ::         &
-                                              CVmix_bkgnd_params_user
+    type(cvmix_message_type),      intent(inout), pointer, optional ::        &
+                                                            MessageLog
+    type(cvmix_bkgnd_params_type), intent(inout), target,  optional ::        &
+                                               CVmix_bkgnd_params_user
 
 !EOP
 !BOC
 
     type(cvmix_bkgnd_params_type), pointer :: CVmix_bkgnd_params_out
+
+    character(len=20), parameter:: RoutineName = "cvmix_put_bkgnd_real"
 
     CVmix_bkgnd_params_out => CVmix_bkgnd_params_saved
     if (present(CVmix_bkgnd_params_user)) then
@@ -875,6 +910,9 @@ contains
         stop 1
       
     end select
+    if (present(MessageLog)) &
+      call cvmix_log_namelist(MessageLog, val, varname, ModuleName,           &
+                              RoutineName)
 
 !EOC
 
