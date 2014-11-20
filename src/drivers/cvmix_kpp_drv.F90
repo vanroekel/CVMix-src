@@ -29,6 +29,8 @@ module cvmix_kpp_drv
                                     cvmix_kpp_compute_shape_function_coeffs,  &
                                     cvmix_coeffs_kpp
   use cvmix_put_get,         only : cvmix_put
+  use cvmix_messages,        only : cvmix_log_diagnostic,                     &
+                                    cvmix_log_warning
   use cvmix_io,              only : cvmix_io_open,                            &
                                     cvmix_output_write,                       &
 #ifdef _NETCDF
@@ -50,7 +52,14 @@ module cvmix_kpp_drv
 
 !EOP
 
-  real(cvmix_r8), parameter :: third = cvmix_one / real(3,cvmix_r8)
+  real(cvmix_r8),    parameter :: third = cvmix_one / real(3,cvmix_r8)
+  character(len=13), parameter :: ModuleName = "cvmix_kpp_drv"
+
+  interface cvmix_log_diag
+    module procedure cvmix_log_diag_int
+    module procedure cvmix_log_diag_r8
+    module procedure cvmix_log_diag_4r8
+  end interface cvmix_log_diag
 
 contains
 
@@ -100,6 +109,8 @@ contains
     logical :: ltest1, ltest2, ltest3, ltest4, ltest5, ltest6
     logical :: lnoDGat1 ! True => G'(1) = 0 (in test 4)
     logical :: lavg_N_or_Nsqr ! True => N_cntr = avg(N_iface[above,below])
+    character(len=16), parameter :: RoutineName = "cvmix_kpp_driver"
+    character(len=cvmix_strlen)  :: Message
 
     namelist/kpp_col1_nml/ltest1, nlev1, layer_thick1, interp_type_t1, hmix1, &
                           ri_crit
@@ -173,8 +184,10 @@ contains
     !         level-center depth (zt) and bulk  Richardson numbers are written
     !         out to test1.nc or test1.out
     if (ltest1) then
-      print*, "Test 1: determining OBL depth"
-      print*, "----------"
+      call cvmix_log_diagnostic(CVMixLog, "Test 1: determining OBL depth",    &
+                                ModuleName, RoutineName)
+      call cvmix_log_diagnostic(CVMixLog, "----------", ModuleName,           &
+                                RoutineName)
 
       ! Initialize parameter datatype and set up column
       call cvmix_init_kpp(ri_crit=ri_crit, interp_type=interp_type_t1,        &
@@ -213,9 +226,12 @@ contains
       call cvmix_kpp_compute_OBL_depth(CVmix_vars1)
 
       ! Output to screen and file
-      print*, "OBL depth = ", CVmix_vars1%BoundaryLayerDepth
-      print*, "kw of interface above OBL depth = ", floor(CVmix_vars1%kOBL_depth)
-      print*, "kt of cell center above OBL depth = ", nint(CVmix_vars1%kOBL_depth)-1
+      call cvmix_log_diag("OBL depth", CVmix_vars1%BoundaryLayerDepth,        &
+                          CVMixLog)
+      call cvmix_log_diag("kw of interface above OBL depth",                  &
+                          floor(CVmix_vars1%kOBL_depth), CVMixLog)
+      call cvmix_log_diag("kt of cell center above OBL depth",                &
+                          nint(CVmix_vars1%kOBL_depth)-1, CVMixLog)
 
 #ifdef _NETCDF
       call cvmix_io_open(fid, "test1.nc", "nc")
@@ -235,38 +251,45 @@ contains
 #endif
 
       call cvmix_io_close(fid)
-
       deallocate(zt, zw_iface, Ri_bulk)
+      call cvmix_log_diagnostic(CVMixLog, "", ModuleName, RoutineName)
     end if ! ltest for Test 1
 
     ! Test 2: Compute coefficients of shape function G(sigma) when G(1) = 0 and
     !         G'(1) = 0. Result should be G(sigma) = sigma - 2sigma^2 + sigma^3
     if (ltest2) then
-      print*, ""
-      print*, "Test 2: Computing G(sigma)"
-      print*, "----------"
+      call cvmix_log_diagnostic(CVMixLog, "Test 2: Computing G(sigma)",       &
+                                ModuleName, RoutineName)
+      call cvmix_log_diagnostic(CVMixLog, "----------", ModuleName,           &
+                                RoutineName)
 
       call cvmix_init_kpp(MatchTechnique='MatchGradient', MessageLog=CVMixLog)
       call cvmix_kpp_compute_shape_function_coeffs(cvmix_zero, cvmix_zero,    &
                                                    shape_coeffs)
-      write(*,"(1X,A,4F7.3)") "Coefficients are: ", shape_coeffs
+      call cvmix_log_diag("Coefficients are", shape_coeffs, CVMixLog)
+      call cvmix_log_diagnostic(CVMixLog, "", ModuleName, RoutineName)
     end if ! ltest for test 2
 
     ! Test 3: Recreate Figure B1 in LMD94 (phi(zeta)). Note that von Karman,
     !         surface buoyancy forcing, and surface velocity are set such that
     !         Monin-Obukhov constant = 1 => zeta = sigma.
     if (ltest3) then
-      print*, ""
-      print*, "Test 3: determining phi_m and phi_s (inversely proportional ", &
-              "to w_m and w_s, respectively)"
-      print*, "----------"
+      write(Message,"(3A)") "Test 3: determining phi_m and phi_s ",           &
+                            "(inversely proportional to w_m and w_s, ",       &
+                            "respectively)"
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
+      call cvmix_log_diagnostic(CVMixLog, "----------", ModuleName,           &
+                                RoutineName)
+
       call cvmix_init_kpp(vonkarman=cvmix_one, surf_layer_ext=cvmix_one,      &
                           MessageLog=CVMixLog)
-      print*, "Coefficients for computing phi_m and phi_s:"
-      print*, "a_m = ", cvmix_get_kpp_real('a_m')
-      print*, "c_m = ", cvmix_get_kpp_real('c_m')
-      print*, "a_s = ", cvmix_get_kpp_real('a_s')
-      print*, "c_s = ", cvmix_get_kpp_real('c_s')
+      call cvmix_log_diagnostic(CVMixLog,                                     &
+                               "Coefficients for computing phi_m and phi_s:", &
+                                ModuleName, RoutineName)
+      call cvmix_log_diag("a_m", cvmix_get_kpp_real('a_m'), CVMixLog)
+      call cvmix_log_diag("c_m", cvmix_get_kpp_real('c_m'), CVMixLog)
+      call cvmix_log_diag("a_s", cvmix_get_kpp_real('a_s'), CVMixLog)
+      call cvmix_log_diag("c_s", cvmix_get_kpp_real('c_s'), CVMixLog)
       allocate(w_m(nlev3+1), w_s(nlev3+1), zeta(nlev3+1))
       ! Note: zeta = sigma*OBL_depth/MoninObukhov constant
       !       zeta < 0 => unstable flow
@@ -294,21 +317,26 @@ contains
       call cvmix_output_write(fid, "data", (/"nrow", "ncol"/), TwoDArray)
       call cvmix_io_close(fid)
 #ifdef _NETCDF
-      print*, "Done! Data is stored in test3.nc, run plot_flux_profiles.ncl", &
-              " to see output."
+      write(Message,"(2A)"), "Done! Data is stored in test3.nc, run ",        &
+                             "plot_flux_profiles.ncl to see output."
 #else
-      print*, "Done! Data is stored in test3.out, run plot_flux_profiles.ncl",&
-              " to see output."
+      write(Message,"(2A)"), "Done! Data is stored in test3.out, run ",       &
+                             "plot_flux_profiles.ncl to see output."
 #endif
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
       deallocate(TwoDArray)
       deallocate(zeta, w_m, w_s)
+      call cvmix_log_diagnostic(CVMixLog, "", ModuleName, RoutineName)
     endif ! ltest3
 
     if (ltest4) then
-      print*, ""
-      print*, "Test 4: Computing Diffusivity in boundary layer"
-      print*, "        (2 cases - boundary layer above and below cell center)"
-      print*, "----------"
+      Message = "Test 4: Computing Diffusivity in boundary layer"
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
+      write(Message,"(2A)") "        (2 cases - boundary layer above and ",   &
+                            "below cell center)"
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
+      call cvmix_log_diagnostic(CVMixLog, "----------", ModuleName,           &
+                                RoutineName)
 
       call cvmix_init_kpp(MatchTechnique='MatchGradient', MessageLog=CVMixLog)
       nlev4 = 5
@@ -359,19 +387,23 @@ contains
       call cvmix_put(CVmix_vars4, 'kOBL_depth',                               &
            cvmix_kpp_compute_kOBL_depth(zw_iface, zt, OBL_depth4))
 
-      print*, "OBL_depth = ", CVmix_vars4%BoundaryLayerDepth
-      print*, "kOBL_depth = ", CVmix_vars4%kOBL_depth
-
       call cvmix_init_kpp(ri_crit=ri_crit, vonkarman=0.4_cvmix_r8,            &
                           interp_type2=interp_type_t4, lnoDGat1=lnoDGat1,     &
                           MessageLog=CVMixLog)
       call cvmix_coeffs_kpp(CVmix_vars4)
 
-      print*, "Height and Diffusivity throughout column: "
+      call cvmix_log_diag("OBL_depth", CVmix_vars4%BoundaryLayerDepth,        &
+                          CVMixLog)
+      call cvmix_log_diag("kOBL_depth", CVmix_vars4%kOBL_depth,               &
+                          CVMixLog)
+
+      Message = "Height and Diffusivity throughout column: "
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
       do kw=1,nlev4+1
-        write(*,"(1X, F6.2, 1X, F8.5)") zw_iface(kw), Mdiff(kw)
+        write(Message,"(1X, F6.2, 1X, F8.5)") zw_iface(kw), Mdiff(kw)
+        call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
       end do
-      print*, ""
+      call cvmix_log_diagnostic(CVMixLog, "", ModuleName, RoutineName)
 
 #ifdef _NETCDF
       call cvmix_io_open(fid, "test4a.nc", "nc")
@@ -402,17 +434,21 @@ contains
       call cvmix_put(CVmix_vars4, 'kOBL_depth',                               &
                      cvmix_kpp_compute_kOBL_depth(zw_iface, zt, OBL_depth4))
 
-      print*, "OBL_depth = ", CVmix_vars4%BoundaryLayerDepth
-      print*, "kOBL_depth = ", CVmix_vars4%kOBL_depth
-
       call cvmix_init_kpp(ri_crit=ri_crit, vonkarman=0.4_cvmix_r8,            &
                           interp_type2=interp_type_t4, lnoDGat1=lnoDGat1,     &
                           MessageLog=CVMixLog)
       call cvmix_coeffs_kpp(CVmix_vars4)
 
-      print*, "Height and Diffusivity throughout column: "
+      call cvmix_log_diag("OBL_depth", CVmix_vars4%BoundaryLayerDepth,        &
+                          CVMixLog)
+      call cvmix_log_diag("kOBL_depth", CVmix_vars4%kOBL_depth,               &
+                          CVMixLog)
+
+      Message = "Height and Diffusivity throughout column: "
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
       do kw=1,nlev4+1
-        write(*,"(1X, F6.2, 1X, F8.5)") zw_iface(kw), Mdiff(kw)
+        write(Message,"(1X, F6.2, 1X, F8.5)") zw_iface(kw), Mdiff(kw)
+        call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
       end do
 
 #ifdef _NETCDF
@@ -433,13 +469,15 @@ contains
 
       deallocate(zt, zw_iface)
       deallocate(Mdiff, Tdiff, Sdiff)
+      call cvmix_log_diagnostic(CVMixLog, "", ModuleName, RoutineName)
     end if ! ltest4
 
     ! Test 5: Recreate figure C1 from LMD94
     if (ltest5) then
-      print*, ""
-      print*, "Test 5: Computing Bulk Richardson number"
-      print*, "----------"
+      Message = "Test 5: Computing Bulk Richardson number"
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
+      call cvmix_log_diagnostic(CVMixLog, "----------", ModuleName,           &
+                                RoutineName)
 
       ! using linear interpolation, averaging Nsqr, and setting Cv = 1.5 to
       ! match LMD result
@@ -519,20 +557,24 @@ contains
                                        kOBL_depth, zt)
       do kt=1,nlev5
         if (abs(Ri_bulk(kt)-Ri_bulk2(kt)).gt.1e-12_cvmix_r8) then
-          print*, "WARNING: two Ri_bulk computations did not match!"
-          print*, zt(kt), Ri_bulk(kt), Ri_bulk2(kt)
+          write(Message, "(2A,3F11.5)") "Ri_bulk computations did not ",      &
+                                        "match; ", zt(kt), Ri_bulk(kt),       &
+                                        Ri_bulk2(kt)
+          call cvmix_log_warning(CVMixLog, Message, ModuleName, RoutineName)
         else
-          print*, zt(kt), Ri_bulk(kt)
+          write(Message, "(2F21.15)") zt(kt), Ri_bulk(kt)
+          call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
         end if
       end do
-      print*, "OBL has depth of ", OBL_depth5
+      call cvmix_log_diag("OBL_depth", OBL_depth5, CVMixLog)
 #ifdef _NETCDF
-      print*, "Done! Data is stored in test5.nc, run plot_bulk_Rich.ncl ",    &
-              "to see output."
+      write(Message,"(2A)") "Done! Data is stored in test5.nc, run ",         &
+                            "plot_bulk_Rich.ncl to see output."
 #else
-      print*, "Done! Data is stored in test5.out, run plot_bulk_Rich.ncl ",   &
-              "to see output."
+      write(Message,"(2A)") "Done! Data is stored in test5.out, run ",        &
+                            "plot_bulk_Rich.ncl to see output."
 #endif
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
 
       CVmix_vars5%nlev                =  nlev5
       CVmix_vars5%BoundaryLayerDepth  =  OBL_depth5
@@ -566,37 +608,49 @@ contains
       deallocate(zt, zw_iface)
       deallocate(buoyancy, delta_vel_sqr, hor_vel, shear_sqr, w_s, Ri_bulk,   &
                  Ri_bulk2, buoy_freq_iface)
+      call cvmix_log_diagnostic(CVMixLog, "", ModuleName, RoutineName)
     end if ! ltest5
 
     ! Test 6: Recreate figure C1 from LMD94
     if (ltest6) then
-      print*, ""
-      print*, "Test 6: 2 simple tests for velocity scale"
-      print*, "----------"
+      Message = "Test 6: 2 simple tests for velocity scale" 
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
+      call cvmix_log_diagnostic(CVMixLog, "----------", ModuleName,           &
+                                RoutineName)
     
       call cvmix_init_kpp(vonkarman=vonkarman6, MessageLog=CVMixLog)
       sigma6 = 0.1_cvmix_r8
 
       surf_buoy_force6 = cvmix_zero
       surf_fric_vel6   = sqrt(tao/rho0)
-      print*, "6a: Bf = 0 m^2/s^3 and u* = sqrt(tao/rho0)"
-      print*, "                          =", surf_fric_vel6
+      call cvmix_log_diagnostic(CVMixLog,                                     &
+                                "6a: Bf = 0 m^2/s^3 and u* = sqrt(tao/rho0)", &
+                                ModuleName, RoutineName)
+      write(Message, "(A,F21.15)") "                          =",             &
+                                   surf_fric_vel6
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
+
       wm6_true = cvmix_get_kpp_real("vonkarman")*surf_fric_vel6
       call cvmix_kpp_compute_turbulent_scales(sigma6, OBL_depth6,             &
                                               surf_buoy_force6,               &
                                               surf_fric_vel6, w_m = w_m6,     &
                                               w_s = w_s6)
 
-      print*, "    => w_m = w_s ~= vonkarman*u*"
-      print*, "                  =", wm6_true
-      print*, "w_m = ", w_m6
-      print*, "w_s = ", w_s6
-      print*, ""
+      call cvmix_log_diagnostic(CVMixLog, "    => w_m = w_s ~= vonkarman*u*", &
+                                ModuleName, RoutineName)
+      write(Message,"(A,F21.15)") "                  =", wm6_true
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
+      call cvmix_log_diag("w_m", w_m6, CVMixLog)
+      call cvmix_log_diag("w_s", w_s6, CVMixLog)
+      call cvmix_log_diagnostic(CVMixLog, "", ModuleName, RoutineName)
 
       surf_buoy_force6 = grav*alpha*Qnonpen / (rho0*Cp0)
       surf_fric_vel6   = cvmix_zero
-      print*, "6b: u* = 0 m/s and Bf = (grav*alpha/(rho0*Cp0))*Qnonpen"
-      print*, "                      =", surf_buoy_force6
+      write(Message, "(2A)") "6b: u* = 0 m/s and ",                           &
+                             "Bf = (grav*alpha/(rho0*Cp0))*Qnonpen"
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
+      write(Message, "(A,E26.18)") "                      =", surf_buoy_force6
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
       wm6_true = cvmix_get_kpp_real("vonkarman")*                             &
                  ((-surf_buoy_force6*OBL_depth6)**third)*                     &
    ((cvmix_get_kpp_real("c_m")*sigma6*cvmix_get_kpp_real("vonkarman"))**third)
@@ -608,21 +662,68 @@ contains
                                               surf_fric_vel6, w_m = w_m6,     &
                                               w_s = w_s6)
 
-      print*, "    => w_m = vonkarman * (-Bf * OBL_depth)^1/3 *",             &
-                            " (c_m*0.1*vonkarman)^1/3 m/s"
-      print*, "           = ", wm6_true
-      print*, "    => w_s = vonkarman * (-Bf * OBL_depth)^1/3 *",             &
-                            " (c_s*0.1*vonkarman)^1/3 m/s"
-      print*, "           = ", ws6_true
-      print*, "w_m = ", w_m6
-      print*, "w_s = ", w_s6
-      print*, ""
-    
+      write(Message,"(2A)") "    => w_m = vonkarman * (-Bf * ",               &
+                            " OBL_depth)^1/3 * (c_m*0.1*vonkarman)^1/3 m/s"
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
+      write(Message,"(A,F21.15)") "           = ", wm6_true
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
+
+      write(Message,"(2A)") "    => w_s = vonkarman * (-Bf * ",               &
+                            " OBL_depth)^1/3 * (c_s*0.1*vonkarman)^1/3 m/s"
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
+      write(Message,"(A,F21.15)") "           = ", ws6_true
+      call cvmix_log_diagnostic(CVMixLog, Message, ModuleName, RoutineName)
+
+      call cvmix_log_diag("w_m", w_m6, CVMixLog)
+      call cvmix_log_diag("w_s", w_s6, CVMixLog)
+      call cvmix_log_diagnostic(CVMixLog, "", ModuleName, RoutineName)
 
     end if ! ltest6
 
 !EOC
 
   end subroutine cvmix_kpp_driver
+
+  subroutine cvmix_log_diag_int(varname, val, MessageLog)
+
+    character(len=*),                  intent(in)    :: varname
+    integer,                           intent(in)    :: val
+    type(cvmix_message_type), pointer, intent(inout) :: MessageLog
+
+    character(len=18), parameter :: RoutineName = "cvmix_log_diag_int"
+    character(len=cvmix_strlen)  :: Message
+
+    write(Message,"(A,' = ', I0)") varname, val
+    call cvmix_log_diagnostic(MessageLog, Message, ModuleName, RoutineName)
+
+  end subroutine cvmix_log_diag_int
+
+  subroutine cvmix_log_diag_r8(varname, val, MessageLog)
+
+    character(len=*),                  intent(in)    :: varname
+    real(cvmix_r8),                    intent(in)    :: val
+    type(cvmix_message_type), pointer, intent(inout) :: MessageLog
+
+    character(len=17), parameter :: RoutineName = "cvmix_log_diag_r8"
+    character(len=cvmix_strlen)  :: Message
+
+    write(Message,"(A,' = ', F21.15)") varname, val
+    call cvmix_log_diagnostic(MessageLog, Message, ModuleName, RoutineName)
+
+  end subroutine cvmix_log_diag_r8
+
+  subroutine cvmix_log_diag_4r8(varname, val, MessageLog)
+
+    character(len=*),                  intent(in)    :: varname
+    real(cvmix_r8), dimension(4),      intent(in)    :: val
+    type(cvmix_message_type), pointer, intent(inout) :: MessageLog
+
+    character(len=18), parameter :: RoutineName = "cvmix_log_diag_4r8"
+    character(len=cvmix_strlen)  :: Message
+
+    write(Message,"(A,': ', 4F7.3)") varname, val
+    call cvmix_log_diagnostic(MessageLog, Message, ModuleName, RoutineName)
+
+  end subroutine cvmix_log_diag_4r8
 
 end module cvmix_kpp_drv
