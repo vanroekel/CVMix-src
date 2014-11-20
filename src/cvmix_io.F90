@@ -1704,15 +1704,15 @@ contains
 
     type(cvmix_message_type), pointer,  intent(in) :: current
 
-600 format('(',A,'::',A,'): ',A)
+601 format('(',A,'): ',A)
 603 format('WARNING (',A,'::',A,'): ',A)
 604 format('ERROR (',A,'::',A,'): ',A)
 
     select case (current%StatusCode)
-      case (cvmix_status%Verbose, cvmix_status%Diagnostic,                    &
-            cvmix_status%EchoNamelist)
-        write(*, 600) trim(current%ModuleName), trim(current%SubroutineName), &
-                      trim(current%Message)
+      case (cvmix_status%Verbose, cvmix_status%Diagnostic)
+        write(*, "(A)") trim(current%Message)
+      case (cvmix_status%EchoNamelist)
+        write(*, 601) trim(current%ModuleName), trim(current%Message)
       case (cvmix_status%Warning)
         write(*, 603) trim(current%ModuleName), trim(current%SubroutineName), &
                       trim(current%Message)
