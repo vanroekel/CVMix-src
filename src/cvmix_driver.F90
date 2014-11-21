@@ -27,12 +27,12 @@ Program cvmix_driver
                                     cvmix_message_type,                       &
                                     cvmix_zero,                               &
                                     cvmix_strlen
-  use cvmix_messages,        only : cvmix_message_init,                       &
+  use cvmix_log,             only : cvmix_log_init,                           &
                                     cvmix_status,                             &
-                                    cvmix_erase_log,                          &
                                     cvmix_log_verbose,                        &
                                     cvmix_log_namelist,                       &
-                                    cvmix_log_error
+                                    cvmix_log_error,                          &
+                                    cvmix_log_erase
   use cvmix_background_drv,  only : cvmix_BL_driver
   use cvmix_kpp_drv,         only : cvmix_kpp_driver
   use cvmix_log_drv,         only : cvmix_log_driver
@@ -72,14 +72,14 @@ Program cvmix_driver
     case ('Error')
       StatusLevel = cvmix_status%Error
     case DEFAULT
-      call cvmix_message_init()
+      call cvmix_log_init()
       write(Message,'(2A)') trim(Verbosity), " is not a valid Verbosity"
       call cvmix_log_error(CVMixLog, Message, "Main", RoutineName)
       StatusLevel = cvmix_status%Warning
   end select
-  call cvmix_message_init(StatusLevel)
+  call cvmix_log_init(StatusLevel)
   call cvmix_print_log(CVMixLog)
-  call cvmix_erase_log(CVMixLog)
+  call cvmix_log_erase(CVMixLog)
 
   call cvmix_log_namelist(CVMixLog, mix_type, "mix_type", "Main", RoutineName)
   call cvmix_log_namelist(CVMixLog, nlev, "nlev", "Main", RoutineName)
@@ -90,7 +90,7 @@ Program cvmix_driver
                           RoutineName)
                      
   call cvmix_print_log(CVMixLog)
-  call cvmix_erase_log(CVMixLog)
+  call cvmix_log_erase(CVMixLog)
 
   select case (trim(mix_type))
     case ('BryanLewis')
@@ -105,7 +105,7 @@ Program cvmix_driver
       call cvmix_kpp_driver(CVMixLog)
     case ('log')
       call cvmix_log_driver()
-      call cvmix_message_init(StatusLevel)
+      call cvmix_log_init(StatusLevel)
     case DEFAULT
       write(Message, "(A,A,A)") "mix_type = '", trim(mix_type),               &
                                 "' is not supported by this driver."
@@ -115,6 +115,6 @@ Program cvmix_driver
   write(Message, "(A,A)") "Completed run with mix_type = ", trim(mix_type)
   call cvmix_log_verbose(CVMixLog, Message, "Main", RoutineName)
   call cvmix_print_log(CVMixLog)
-  call cvmix_erase_log(CVMixLog)
+  call cvmix_log_erase(CVMixLog)
 
 End Program cvmix_driver

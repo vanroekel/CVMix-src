@@ -41,7 +41,7 @@
                                     cvmix_math_cubic_root_find,               &
                                     cvmix_math_evaluate_cubic
   use cvmix_put_get,         only : cvmix_put
-  use cvmix_messages,        only : cvmix_log_namelist
+  use cvmix_log,             only : cvmix_log_namelist
   use cvmix_utils,           only : cvmix_update_wrap
 
 !EOP

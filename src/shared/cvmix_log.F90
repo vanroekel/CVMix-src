@@ -1,15 +1,16 @@
-module cvmix_messages
+module cvmix_log
 
 !BOP
 !\newpage
-! !MODULE: cvmix_messages
+! !MODULE: cvmix_log
 !
 ! !AUTHOR: 
 !  Michael N. Levy, NCAR (mlevy@ucar.edu)
 !
 ! !DESCRIPTION:
-!  This module contains routines manage the linked lists used to control
-!  message logs in CVMix.
+!  This module contains routines to write log messages in a datatyoe that
+!  contains status information (to flag error and warning messages) and
+! origination information (what module / routine produced the message?)
 !\\
 !\\
 
@@ -44,13 +45,13 @@ module cvmix_messages
 
 ! !PUBLIC MEMBER FUNCTIONS:
 
-  public :: cvmix_message_init
-  public :: cvmix_erase_log
+  public :: cvmix_log_init
   public :: cvmix_log_verbose
   public :: cvmix_log_namelist
   public :: cvmix_log_diagnostic
   public :: cvmix_log_warning
   public :: cvmix_log_error
+  public :: cvmix_log_erase
 
   interface cvmix_log_namelist
     module procedure cvmix_log_namelist_int
@@ -59,9 +60,9 @@ module cvmix_messages
     module procedure cvmix_log_namelist_bool
   end interface cvmix_log_namelist
 
-  ! Private variable that is set in cvmix_message_init -- if cvmix_message_init
-  ! is not run, then nothing is written into message log
-  integer :: MinMessageLevel = cvmix_status%Error+1
+  ! Private variable that is set in cvmix_log_init -- if cvmix_log_init is not
+  ! run, then nothing is written into message log
+  integer :: MinStatusLevel = cvmix_status%Error+1
 
 !EOP
 
@@ -74,10 +75,10 @@ contains
 
 !BOP
 
-! !IROUTINE: cvmix_message_init
+! !IROUTINE: cvmix_log_init
 ! !INTERFACE:
 
-  subroutine cvmix_message_init(MessageLevel)
+  subroutine cvmix_log_init(StatusLevel)
 
 ! !DESCRIPTION:
 !  Initialize module to enable writing CVMix message logs
@@ -85,55 +86,20 @@ contains
 !\\
 
 ! !INPUT PARAMETERS:
-    integer, optional, intent(in) :: MessageLevel
+    integer, optional, intent(in) :: StatusLevel
 
 !EOP
 !BOC
 
-    if (present(MessageLevel)) then
-      MinMessageLevel = MessageLevel
+    if (present(StatusLevel)) then
+      MinStatusLevel = StatusLevel
     else
-      MinMessageLevel = cvmix_status%Warning
+      MinStatusLevel = cvmix_status%Warning
     end if
 
 !EOC
 
-  end subroutine cvmix_message_init
-
-!BOP
-
-! !IROUTINE: cvmix_erase_log
-! !INTERFACE:
-
-  subroutine cvmix_erase_log(self)
-
-! !DESCRIPTION:
-!  Deletes all entries from a linked list
-!\\
-!\\
-
-! !INPUT PARAMETERS:
-    type(cvmix_message_type), pointer, intent(inout) :: self
-
-!EOP
-!BOC
-
-    type(cvmix_message_type), pointer :: current, next
-
-    current => self
-    do while (associated(current))
-      next => current%next
-      deallocate(current)
-      nullify(current)
-      current => next
-    end do
-
-    if (associated(self)) &
-      nullify(self)
-
-!EOC
-
-  end subroutine cvmix_erase_log
+  end subroutine cvmix_log_init
 
 !BOP
 
@@ -160,7 +126,7 @@ contains
     call cvmix_new_log(NewEntry, cvmix_status%Verbose, Message, ModuleName,   &
                        RoutineName)
     call cvmix_message_append(self, NewEntry)
-    call cvmix_erase_log(NewEntry)
+    call cvmix_log_erase(NewEntry)
 
 !EOC
 
@@ -197,7 +163,7 @@ contains
                        ModuleName, RoutineName)
 
     call cvmix_message_append(self, NewEntry)
-    call cvmix_erase_log(NewEntry)
+    call cvmix_log_erase(NewEntry)
 
 !EOC
 
@@ -234,7 +200,7 @@ contains
                        ModuleName, RoutineName)
 
     call cvmix_message_append(self, NewEntry)
-    call cvmix_erase_log(NewEntry)
+    call cvmix_log_erase(NewEntry)
 
 !EOC
 
@@ -271,7 +237,7 @@ contains
                        ModuleName, RoutineName)
 
     call cvmix_message_append(self, NewEntry)
-    call cvmix_erase_log(NewEntry)
+    call cvmix_log_erase(NewEntry)
 
 !EOC
 
@@ -312,7 +278,7 @@ contains
                        ModuleName, RoutineName)
 
     call cvmix_message_append(self, NewEntry)
-    call cvmix_erase_log(NewEntry)
+    call cvmix_log_erase(NewEntry)
 
 !EOC
 
@@ -343,7 +309,7 @@ contains
     call cvmix_new_log(NewEntry, cvmix_status%Diagnostic, Message,            &
                        ModuleName, RoutineName)
     call cvmix_message_append(self, NewEntry)
-    call cvmix_erase_log(NewEntry)
+    call cvmix_log_erase(NewEntry)
 
 !EOC
 
@@ -374,7 +340,7 @@ contains
     call cvmix_new_log(NewEntry, cvmix_status%Warning, Message, ModuleName,   &
                        RoutineName)
     call cvmix_message_append(self, NewEntry)
-    call cvmix_erase_log(NewEntry)
+    call cvmix_log_erase(NewEntry)
 
 !EOC
 
@@ -405,11 +371,46 @@ contains
     call cvmix_new_log(NewEntry, cvmix_status%Error, Message, ModuleName,     &
                        RoutineName)
     call cvmix_message_append(self, NewEntry)
-    call cvmix_erase_log(NewEntry)
+    call cvmix_log_erase(NewEntry)
 
 !EOC
 
   end subroutine cvmix_log_error
+
+!BOP
+
+! !IROUTINE: cvmix_log_erase
+! !INTERFACE:
+
+  subroutine cvmix_log_erase(self)
+
+! !DESCRIPTION:
+!  Deletes all entries from a linked list
+!\\
+!\\
+
+! !INPUT PARAMETERS:
+    type(cvmix_message_type), pointer, intent(inout) :: self
+
+!EOP
+!BOC
+
+    type(cvmix_message_type), pointer :: current, next
+
+    current => self
+    do while (associated(current))
+      next => current%next
+      deallocate(current)
+      nullify(current)
+      current => next
+    end do
+
+    if (associated(self)) &
+      nullify(self)
+
+!EOC
+
+  end subroutine cvmix_log_erase
 
 !!!! PRIVATE ROUTINES !!!!
 
@@ -473,13 +474,13 @@ contains
     allocate(self)
     nullify(self%next)
 
-    if (StatusCode.ge.MinMessageLevel) then
+    if (StatusCode.ge.MinStatusLevel) then
       self%StatusCode     = StatusCode
       self%Message        = Message
       self%ModuleName     = ModuleName
       self%SubroutineName = SubroutineName
     else
-      call cvmix_erase_log(self)
+      call cvmix_log_erase(self)
     end if
 
 !EOC
@@ -524,4 +525,4 @@ contains
 
   end subroutine cvmix_message_append
 
-end module cvmix_messages
+end module cvmix_log

@@ -29,7 +29,7 @@ module cvmix_kpp_drv
                                     cvmix_kpp_compute_shape_function_coeffs,  &
                                     cvmix_coeffs_kpp
   use cvmix_put_get,         only : cvmix_put
-  use cvmix_messages,        only : cvmix_log_diagnostic,                     &
+  use cvmix_log,             only : cvmix_log_diagnostic,                     &
                                     cvmix_log_warning
   use cvmix_io,              only : cvmix_io_open,                            &
                                     cvmix_output_write,                       &

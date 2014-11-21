@@ -16,7 +16,7 @@ ifeq ($(FC),NONE)
 endif
 
 MODULES = cvmix_kinds_and_types.F90 \
-          cvmix_messages.F90 \
+          cvmix_log.F90 \
           cvmix_background.F90 \
           cvmix_convection.F90 \
           cvmix_ddiff.F90 \

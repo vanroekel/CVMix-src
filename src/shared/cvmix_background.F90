@@ -36,7 +36,7 @@ module cvmix_background
                                     CVMIX_MAX_OLD_AND_NEW_VALS
   use cvmix_put_get,         only : cvmix_put
   use cvmix_utils,           only : cvmix_update_wrap
-  use cvmix_messages,        only : cvmix_log_namelist
+  use cvmix_log,             only : cvmix_log_namelist
 
 !EOP
 

@@ -13,7 +13,7 @@ f90pdf                                       \
        $DRIVE/cvmix_log_drv.F90              \
        $SRC/cvmix_io.F90                     \
        $SHARE/cvmix_kinds_and_types.F90      \
-       $SHARE/cvmix_messages.F90             \
+       $SHARE/cvmix_log.F90                  \
        $SHARE/cvmix_background.F90           \
        $SHARE/cvmix_shear.F90                \
        $SHARE/cvmix_tidal.F90                \

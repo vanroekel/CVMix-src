@@ -15,13 +15,13 @@ module cvmix_log_drv
 ! !USES:
 
     use cvmix_kinds_and_types, only : cvmix_message_type
-    use cvmix_messages,        only : cvmix_message_init,                     &
+    use cvmix_log,             only : cvmix_log_init,                         &
                                       cvmix_log_verbose,                      &
                                       cvmix_log_namelist,                     &
                                       cvmix_log_warning,                      &
                                       cvmix_log_diagnostic,                   &
                                       cvmix_log_error,                        &
-                                      cvmix_erase_log,                        &
+                                      cvmix_log_erase,                        &
                                       cvmix_status
     use cvmix_io,              only : cvmix_print_log
 
@@ -64,48 +64,48 @@ contains
     write(*,*) ""
 
     ! Set status to Verbose, print log
-    call cvmix_message_init(cvmix_status%Verbose)
+    call cvmix_log_init(cvmix_status%Verbose)
     call cvmix_test_log_writing(rootlog)
     write(*,"(A)") "Logging level = Verbose"
     write(*,"(A)") "----"
     call cvmix_print_log(rootlog, StopOnError=.false.)
-    call cvmix_erase_log(rootlog)
+    call cvmix_log_erase(rootlog)
     write(*,*) ""
 
     ! Set status to EchoNamelist, print log
-    call cvmix_message_init(cvmix_status%EchoNamelist)
+    call cvmix_log_init(cvmix_status%EchoNamelist)
     call cvmix_test_log_writing(rootlog)
     write(*,"(A)") "Logging level = EchoNamelist"
     write(*,"(A)") "----"
     call cvmix_print_log(rootlog, StopOnError=.false.)
-    call cvmix_erase_log(rootlog)
+    call cvmix_log_erase(rootlog)
     write(*,*) ""
 
     ! Set status to Diagnostic, print log
-    call cvmix_message_init(cvmix_status%Diagnostic)
+    call cvmix_log_init(cvmix_status%Diagnostic)
     call cvmix_test_log_writing(rootlog)
     write(*,"(A)") "Logging level = Diagnostic"
     write(*,"(A)") "----"
     call cvmix_print_log(rootlog, StopOnError=.false.)
-    call cvmix_erase_log(rootlog)
+    call cvmix_log_erase(rootlog)
     write(*,*) ""
 
     ! Set status to Warning, print log
-    call cvmix_message_init(cvmix_status%Warning)
+    call cvmix_log_init(cvmix_status%Warning)
     call cvmix_test_log_writing(rootlog)
     write(*,"(A)") "Logging level = Warning"
     write(*,"(A)") "----"
     call cvmix_print_log(rootlog, StopOnError=.false.)
-    call cvmix_erase_log(rootlog)
+    call cvmix_log_erase(rootlog)
     write(*,*) ""
 
     ! Set status to Error, print log
-    call cvmix_message_init(cvmix_status%Error)
+    call cvmix_log_init(cvmix_status%Error)
     call cvmix_test_log_writing(rootlog)
     write(*,"(A)") "Logging level = Error"
     write(*,"(A)") "----"
     call cvmix_print_log(rootlog, StopOnError=.false.)
-    call cvmix_erase_log(rootlog)
+    call cvmix_log_erase(rootlog)
     write(*,*) ""
 
 !EOC

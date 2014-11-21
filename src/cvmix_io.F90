@@ -19,7 +19,7 @@ module cvmix_io
                                      cvmix_message_type,                      &
                                      cvmix_zero,                              &
                                      cvmix_strlen
-   use cvmix_messages,        only : cvmix_status
+   use cvmix_log,             only : cvmix_status
    use cvmix_utils,           only : cvmix_att_name
 #ifdef _NETCDF
    use netcdf
