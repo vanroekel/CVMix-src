@@ -186,9 +186,9 @@ module cvmix_kinds_and_types
     integer :: StatusCode
 
     ! Informational Strings
-    character(len=cvmix_strlen) :: Message,       &! Message text
-                                   ModuleName,    &! Module producing message
-                                   SubroutineName  ! Subroutine producing message
+    character(len=cvmix_strlen) :: Message,    &! Message text
+                                   ModName,    &! Module producing message
+                                   SubName      ! Subroutine producing message
 
     type(cvmix_message_type), pointer :: next ! Linked list to track events
 

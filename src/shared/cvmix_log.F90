@@ -106,7 +106,7 @@ contains
 ! !IROUTINE: cvmix_log_verbose
 ! !INTERFACE:
 
-  subroutine cvmix_log_verbose(self, Message, ModuleName, RoutineName)
+  subroutine cvmix_log_verbose(self, Message, ModName, SubName)
 
 ! !DESCRIPTION:
 !  Adds a verbose entry to a log
@@ -115,16 +115,16 @@ contains
 
 ! !INPUT PARAMETERS:
     type(cvmix_message_type), pointer, intent(inout) :: self
-    character(len=*),                  intent(in)    :: Message, ModuleName,  &
-                                                        RoutineName
+    character(len=*),                  intent(in)    :: Message, ModName,     &
+                                                        SubName
 
 !EOP
 !BOC
 
     type(cvmix_message_type), pointer :: NewEntry
 
-    call cvmix_new_log(NewEntry, cvmix_status%Verbose, Message, ModuleName,   &
-                       RoutineName)
+    call cvmix_new_log(NewEntry, cvmix_status%Verbose, Message, ModName,      &
+                       SubName)
     call cvmix_message_append(self, NewEntry)
     call cvmix_log_erase(NewEntry)
 
@@ -137,8 +137,7 @@ contains
 ! !IROUTINE: cvmix_log_namelist_int
 ! !INTERFACE:
 
-  subroutine cvmix_log_namelist_int(self, val, VarName, ModuleName,           &
-                                    RoutineName)
+  subroutine cvmix_log_namelist_int(self, val, VarName, ModName, Subname)
 
 ! !DESCRIPTION:
 !  Prints "varname = val" to log for integer val
@@ -148,8 +147,8 @@ contains
 ! !INPUT PARAMETERS:
     type(cvmix_message_type), pointer, intent(inout) :: self
     integer,                           intent(in)    :: val
-    character(len=*),                  intent(in)    :: VarName, ModuleName,  &
-                                                        RoutineName
+    character(len=*),                  intent(in)    :: VarName, ModName,     &
+                                                        SubName
 
 !EOP
 !BOC
@@ -159,8 +158,8 @@ contains
 
     write(Message, "(2A,I0)") trim(VarName), " = ", val
 
-    call cvmix_new_log(NewEntry, cvmix_status%EchoNamelist, Message,          &
-                       ModuleName, RoutineName)
+    call cvmix_new_log(NewEntry, cvmix_status%EchoNamelist, Message, ModName, &
+                       SubName)
 
     call cvmix_message_append(self, NewEntry)
     call cvmix_log_erase(NewEntry)
@@ -174,8 +173,7 @@ contains
 ! !IROUTINE: cvmix_log_namelist_r8
 ! !INTERFACE:
 
-  subroutine cvmix_log_namelist_r8(self, val, VarName, ModuleName,            &
-                                   RoutineName)
+  subroutine cvmix_log_namelist_r8(self, val, VarName, ModName, SubName)
 
 ! !DESCRIPTION:
 !  Prints "varname = val" to log for real val
@@ -185,8 +183,8 @@ contains
 ! !INPUT PARAMETERS:
     type(cvmix_message_type), pointer, intent(inout) :: self
     real(cvmix_r8),                    intent(in)    :: val
-    character(len=*),                  intent(in)    :: VarName, ModuleName,  &
-                                                        RoutineName
+    character(len=*),                  intent(in)    :: VarName, ModName,     &
+                                                        SubName
 
 !EOP
 !BOC
@@ -196,8 +194,8 @@ contains
 
     write(Message, "(2A,E10.3E2)") trim(VarName), " = ", val
 
-    call cvmix_new_log(NewEntry, cvmix_status%EchoNamelist, Message,          &
-                       ModuleName, RoutineName)
+    call cvmix_new_log(NewEntry, cvmix_status%EchoNamelist, Message, ModName, &
+                       SubName)
 
     call cvmix_message_append(self, NewEntry)
     call cvmix_log_erase(NewEntry)
@@ -211,8 +209,7 @@ contains
 ! !IROUTINE: cvmix_log_namelist_str
 ! !INTERFACE:
 
-  subroutine cvmix_log_namelist_str(self, val, VarName, ModuleName,           &
-                                    RoutineName)
+  subroutine cvmix_log_namelist_str(self, val, VarName, ModName, SubName)
 
 ! !DESCRIPTION:
 !  Prints "varname = val" to log for string val
@@ -222,8 +219,8 @@ contains
 ! !INPUT PARAMETERS:
     type(cvmix_message_type), pointer, intent(inout) :: self
     character(len=*),                  intent(in)    :: val
-    character(len=*),                  intent(in)    :: VarName, ModuleName,  &
-                                                        RoutineName
+    character(len=*),                  intent(in)    :: VarName, ModName,     &
+                                                        SubName
 
 !EOP
 !BOC
@@ -233,8 +230,8 @@ contains
 
     write(Message, "(4A)") trim(VarName), " = '", trim(val), "'"
 
-    call cvmix_new_log(NewEntry, cvmix_status%EchoNamelist, Message,          &
-                       ModuleName, RoutineName)
+    call cvmix_new_log(NewEntry, cvmix_status%EchoNamelist, Message, ModName, &
+                       SubName)
 
     call cvmix_message_append(self, NewEntry)
     call cvmix_log_erase(NewEntry)
@@ -248,8 +245,7 @@ contains
 ! !IROUTINE: cvmix_log_namelist_bool
 ! !INTERFACE:
 
-  subroutine cvmix_log_namelist_bool(self, val, VarName, ModuleName,          &
-                                     RoutineName)
+  subroutine cvmix_log_namelist_bool(self, val, VarName, ModName, SubName)
 
 ! !DESCRIPTION:
 !  Prints "varname = val" to log (with status "EchoNamelist") for logical val
@@ -259,8 +255,8 @@ contains
 ! !INPUT PARAMETERS:
     type(cvmix_message_type), pointer, intent(inout) :: self
     logical,                           intent(in)    :: val
-    character(len=*),                  intent(in)    :: VarName, ModuleName,  &
-                                                        RoutineName
+    character(len=*),                  intent(in)    :: VarName, ModName,     &
+                                                        SubName
 
 !EOP
 !BOC
@@ -274,8 +270,8 @@ contains
       write(Message, "(2A)") trim(VarName), " = .false."
     end if
 
-    call cvmix_new_log(NewEntry, cvmix_status%EchoNamelist, Message,          &
-                       ModuleName, RoutineName)
+    call cvmix_new_log(NewEntry, cvmix_status%EchoNamelist, Message, ModName, &
+                       SubName)
 
     call cvmix_message_append(self, NewEntry)
     call cvmix_log_erase(NewEntry)
@@ -289,7 +285,7 @@ contains
 ! !IROUTINE: cvmix_log_diagnostic
 ! !INTERFACE:
 
-  subroutine cvmix_log_diagnostic(self, Message, ModuleName, RoutineName)
+  subroutine cvmix_log_diagnostic(self, Message, ModName, SubName)
 
 ! !DESCRIPTION:
 !  Adds a warning entry to a log
@@ -298,16 +294,16 @@ contains
 
 ! !INPUT PARAMETERS:
     type(cvmix_message_type), pointer, intent(inout) :: self
-    character(len=*),                  intent(in)    :: Message, ModuleName,  &
-                                                        RoutineName
+    character(len=*),                  intent(in)    :: Message, ModName,     &
+                                                        SubName
 
 !EOP
 !BOC
 
     type(cvmix_message_type), pointer :: NewEntry
 
-    call cvmix_new_log(NewEntry, cvmix_status%Diagnostic, Message,            &
-                       ModuleName, RoutineName)
+    call cvmix_new_log(NewEntry, cvmix_status%Diagnostic, Message, ModName,   &
+                       SubName)
     call cvmix_message_append(self, NewEntry)
     call cvmix_log_erase(NewEntry)
 
@@ -320,7 +316,7 @@ contains
 ! !IROUTINE: cvmix_log_warning
 ! !INTERFACE:
 
-  subroutine cvmix_log_warning(self, Message, ModuleName, RoutineName)
+  subroutine cvmix_log_warning(self, Message, ModName, SubName)
 
 ! !DESCRIPTION:
 !  Adds a warning entry to a log
@@ -329,16 +325,16 @@ contains
 
 ! !INPUT PARAMETERS:
     type(cvmix_message_type), pointer, intent(inout) :: self
-    character(len=*),                  intent(in)    :: Message, ModuleName,  &
-                                                        RoutineName
+    character(len=*),                  intent(in)    :: Message, ModName,     &
+                                                        SubName
 
 !EOP
 !BOC
 
     type(cvmix_message_type), pointer :: NewEntry
 
-    call cvmix_new_log(NewEntry, cvmix_status%Warning, Message, ModuleName,   &
-                       RoutineName)
+    call cvmix_new_log(NewEntry, cvmix_status%Warning, Message, ModName,      &
+                       SubName)
     call cvmix_message_append(self, NewEntry)
     call cvmix_log_erase(NewEntry)
 
@@ -351,7 +347,7 @@ contains
 ! !IROUTINE: cvmix_log_error
 ! !INTERFACE:
 
-  subroutine cvmix_log_error(self, Message, ModuleName, RoutineName)
+  subroutine cvmix_log_error(self, Message, ModName, SubName)
 
 ! !DESCRIPTION:
 !  Adds an error entry to a log
@@ -360,16 +356,15 @@ contains
 
 ! !INPUT PARAMETERS:
     type(cvmix_message_type), pointer, intent(inout) :: self
-    character(len=*),                  intent(in)    :: Message, ModuleName,  &
-                                                        RoutineName
+    character(len=*),                  intent(in)    :: Message, ModName,     &
+                                                        SubName
 
 !EOP
 !BOC
 
     type(cvmix_message_type), pointer :: NewEntry
 
-    call cvmix_new_log(NewEntry, cvmix_status%Error, Message, ModuleName,     &
-                       RoutineName)
+    call cvmix_new_log(NewEntry, cvmix_status%Error, Message, ModName, SubName)
     call cvmix_message_append(self, NewEntry)
     call cvmix_log_erase(NewEntry)
 
@@ -436,7 +431,7 @@ contains
     if(present(newdata)) then
       if (associated(newdata)) then
         call cvmix_new_log(self, newdata%StatusCode, newdata%Message,         &
-                           newdata%ModuleName, newdata%SubroutineName)
+                           newdata%ModName, newdata%SubName)
       else
         nullify(self)
       end if
@@ -454,8 +449,7 @@ contains
 ! !IROUTINE: cvmix_new_log_low
 ! !INTERFACE:
 
-  subroutine cvmix_new_log_low(self, StatusCode, Message, ModuleName,         &
-                               SubroutineName)
+  subroutine cvmix_new_log_low(self, StatusCode, Message, ModName, SubName)
 
 ! !DESCRIPTION:
 !  Write status / message information into a message log
@@ -465,8 +459,8 @@ contains
 ! !INPUT PARAMETERS:
     type(cvmix_message_type), pointer, intent(inout) :: self
     integer,                           intent(in)    :: StatusCode
-    character(len=*),                  intent(in)    :: Message, ModuleName,  &
-                                                        SubroutineName
+    character(len=*),                  intent(in)    :: Message, ModName,     &
+                                                        SubName
 
 !EOP
 !BOC
@@ -475,10 +469,10 @@ contains
     nullify(self%next)
 
     if (StatusCode.ge.MinStatusLevel) then
-      self%StatusCode     = StatusCode
-      self%Message        = Message
-      self%ModuleName     = ModuleName
-      self%SubroutineName = SubroutineName
+      self%StatusCode = StatusCode
+      self%Message    = Message
+      self%ModName    = ModName
+      self%SubName    = SubName
     else
       call cvmix_log_erase(self)
     end if

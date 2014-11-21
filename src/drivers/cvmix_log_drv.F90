@@ -39,7 +39,7 @@ module cvmix_log_drv
 
 !EOP
 
-  character(len=13), parameter :: ModuleName = "cvmix_log_drv"
+  character(len=13), parameter :: ModName = "cvmix_log_drv"
 
 contains
 
@@ -116,18 +116,18 @@ contains
 
     type(cvmix_message_type), intent(inout), pointer :: MessageLog
 
-    character(len=22), parameter :: RoutineName = "cvmix_test_log_writing"
+    character(len=22), parameter :: SubName = "cvmix_test_log_writing"
 
-    call cvmix_log_verbose(MessageLog, "Example verbose message", ModuleName, &
-                           RoutineName)
+    call cvmix_log_verbose(MessageLog, "Example verbose message", ModName,    &
+                           SubName)
     call cvmix_log_namelist(MessageLog, .true., "NamelistMessage",            &
-                            ModuleName, RoutineName)
+                            ModName, SubName)
     call cvmix_log_diagnostic(MessageLog, "Example diagnostic message",       &
-                              ModuleName, RoutineName)
-    call cvmix_log_warning(MessageLog, "Example warning message", ModuleName, &
-                           RoutineName)
-    call cvmix_log_error(MessageLog, "Example error message", ModuleName,     &
-                         RoutineName)
+                              ModName, SubName)
+    call cvmix_log_warning(MessageLog, "Example warning message", ModName,    &
+                           SubName)
+    call cvmix_log_error(MessageLog, "Example error message", ModName,        &
+                         SubName)
 
   end subroutine cvmix_test_log_writing
 

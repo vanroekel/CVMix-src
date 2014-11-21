@@ -173,7 +173,7 @@
 !EOP
 
   type(cvmix_kpp_params_type), target    :: CVmix_kpp_params_saved
-  character(len=9),            parameter :: ModuleName = "cvmix_kpp"
+  character(len=9),            parameter :: ModName = "cvmix_kpp"
 
 
 contains
@@ -222,7 +222,7 @@ contains
 !EOP
 !BOC
 
-    character(len=14), parameter:: RoutineName = "cvmix_kpp_init"
+    character(len=14), parameter:: SubName = "cvmix_kpp_init"
     real(cvmix_r8) :: zm, zs, a_m, a_s, c_m, c_s
 
     if (present(ri_crit)) then
@@ -342,7 +342,7 @@ contains
                          CVmix_kpp_params_user)
     end if
     call cvmix_log_namelist(MessageLog, cvmix_get_kpp_str('interp_type'),     &
-                            'interp_type', ModuleName, RoutineName)
+                            'interp_type', ModName, SubName)
 
     if (present(interp_type2)) then
       select case (trim(interp_type2))
@@ -368,7 +368,7 @@ contains
                          CVmix_kpp_params_user)
     end if
     call cvmix_log_namelist(MessageLog, cvmix_get_kpp_str('interp_type2'),    &
-                            'interp_type2', ModuleName, RoutineName)
+                            'interp_type2', ModName, SubName)
 
     if (present(MatchTechnique)) then
       select case (trim(MatchTechnique))
@@ -394,7 +394,7 @@ contains
                          CVmix_kpp_params_user)
     end if
     call cvmix_log_namelist(MessageLog, cvmix_get_kpp_str('MatchTechnique'),  &
-                            'MatchTechnique', ModuleName, RoutineName)
+                            'MatchTechnique', ModName, SubName)
 
     if (present(old_vals)) then
       select case (trim(old_vals))
@@ -417,7 +417,7 @@ contains
                                cvmix_kpp_params_user)
     end if
     call cvmix_log_namelist(MessageLog, cvmix_get_kpp_str('handle_old_vals'), &
-                            'handle_old_vals', ModuleName, RoutineName)
+                            'handle_old_vals', ModName, SubName)
 
     if (present(lEkman)) then
       call cvmix_put_kpp('lEkman', lEkman, CVmix_kpp_params_user, MessageLog)
@@ -962,7 +962,7 @@ contains
 
     type(cvmix_kpp_params_type), pointer :: CVmix_kpp_params_out
 
-    character(len=18), parameter:: RoutineName = "cvmix_put_kpp_real"
+    character(len=18), parameter:: SubName = "cvmix_put_kpp_real"
 
     CVmix_kpp_params_out => CVmix_kpp_params_saved
     if (present(CVmix_kpp_params_user)) then
@@ -997,8 +997,7 @@ contains
         stop 1
     end select
     if (present(MessageLog)) &
-      call cvmix_log_namelist(MessageLog, val, varname, ModuleName,           &
-                              RoutineName)
+      call cvmix_log_namelist(MessageLog, val, varname, ModName, SubName)
 
 !EOC
 
@@ -1088,7 +1087,7 @@ contains
 !BOC
 
     type(cvmix_kpp_params_type), pointer :: CVmix_kpp_params_out
-    character(len=21), parameter:: RoutineName = "cvmix_put_kpp_logical"
+    character(len=21), parameter:: SubName = "cvmix_put_kpp_logical"
 
     CVmix_kpp_params_out => CVmix_kpp_params_saved
     if (present(CVmix_kpp_params_user)) then
@@ -1111,8 +1110,7 @@ contains
         stop 1
     end select
     if (present(MessageLog)) &
-      call cvmix_log_namelist(MessageLog, val, varname, ModuleName,           &
-                              RoutineName)
+      call cvmix_log_namelist(MessageLog, val, varname, ModName, SubName)
 
 !EOC
 

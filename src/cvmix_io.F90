@@ -1707,45 +1707,45 @@ contains
 
 #endif
 
-  subroutine cvmix_log_write_int(MessageLog, varname, val, ModuleName)
+  subroutine cvmix_log_write_int(MessageLog, varname, val, ModName)
 
-    character(len=*),                  intent(in)    :: varname, ModuleName
+    character(len=*),                  intent(in)    :: varname, ModName
     integer,                           intent(in)    :: val
     type(cvmix_message_type), pointer, intent(inout) :: MessageLog
 
-    character(len=19), parameter :: RoutineName = "cvmix_log_write_int"
+    character(len=19), parameter :: SubName = "cvmix_log_write_int"
     character(len=cvmix_strlen)  :: Message
 
     write(Message,"(A,' = ', I0)") varname, val
-    call cvmix_log_diagnostic(MessageLog, Message, ModuleName, RoutineName)
+    call cvmix_log_diagnostic(MessageLog, Message, ModName, SubName)
 
   end subroutine cvmix_log_write_int
 
-  subroutine cvmix_log_write_r8(MessageLog, varname, val, ModuleName)
+  subroutine cvmix_log_write_r8(MessageLog, varname, val, ModName)
 
-    character(len=*),                  intent(in)    :: varname, ModuleName
+    character(len=*),                  intent(in)    :: varname, ModName
     real(cvmix_r8),                    intent(in)    :: val
     type(cvmix_message_type), pointer, intent(inout) :: MessageLog
 
-    character(len=18), parameter :: RoutineName = "cvmix_log_write_r8"
+    character(len=18), parameter :: SubName = "cvmix_log_write_r8"
     character(len=cvmix_strlen)  :: Message
 
     write(Message,"(A,' = ', F21.15)") varname, val
-    call cvmix_log_diagnostic(MessageLog, Message, ModuleName, RoutineName)
+    call cvmix_log_diagnostic(MessageLog, Message, ModName, SubName)
 
   end subroutine cvmix_log_write_r8
 
-  subroutine cvmix_log_write_4r8(MessageLog, varname, val, ModuleName)
+  subroutine cvmix_log_write_4r8(MessageLog, varname, val, ModName)
 
-    character(len=*),                  intent(in)    :: varname, ModuleName
+    character(len=*),                  intent(in)    :: varname, ModName
     real(cvmix_r8), dimension(4),      intent(in)    :: val
     type(cvmix_message_type), pointer, intent(inout) :: MessageLog
 
-    character(len=19), parameter :: RoutineName = "cvmix_log_write_4r8"
+    character(len=19), parameter :: SubName = "cvmix_log_write_4r8"
     character(len=cvmix_strlen)  :: Message
 
     write(Message,"(A,': ', 4F7.3)") varname, val
-    call cvmix_log_diagnostic(MessageLog, Message, ModuleName, RoutineName)
+    call cvmix_log_diagnostic(MessageLog, Message, ModName, SubName)
 
   end subroutine cvmix_log_write_4r8
 
@@ -1762,12 +1762,12 @@ contains
       case (cvmix_status%Verbose, cvmix_status%Diagnostic)
         write(*, "(A)") trim(current%Message)
       case (cvmix_status%EchoNamelist)
-        write(*, 601) trim(current%ModuleName), trim(current%Message)
+        write(*, 601) trim(current%ModName), trim(current%Message)
       case (cvmix_status%Warning)
-        write(*, 603) trim(current%ModuleName), trim(current%SubroutineName), &
+        write(*, 603) trim(current%ModName), trim(current%SubName),           &
                       trim(current%Message)
       case (cvmix_status%Error)
-        write(*, 604) trim(current%ModuleName), trim(current%SubroutineName), &
+        write(*, 604) trim(current%ModName), trim(current%SubName),           &
                       trim(current%Message)
     end select
 

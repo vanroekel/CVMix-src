@@ -103,7 +103,7 @@ module cvmix_background
 !EOP
 
   type(cvmix_bkgnd_params_type), target :: CVmix_bkgnd_params_saved
-  character(len=cvmix_strlen)           :: ModuleName = "cvmix_background"
+  character(len=cvmix_strlen)           :: ModName = "cvmix_background"
 
 contains
 
@@ -140,7 +140,7 @@ contains
 
     type(cvmix_bkgnd_params_type), pointer :: CVmix_bkgnd_params_out
 
-    character(len=23), parameter :: RoutineName = "cvmix_init_bkgnd_scalar"
+    character(len=23), parameter :: SubName = "cvmix_init_bkgnd_scalar"
 
     CVmix_bkgnd_params_out => CVmix_bkgnd_params_saved
     if (present(CVmix_bkgnd_params_user)) then
@@ -158,10 +158,10 @@ contains
                          CVmix_bkgnd_params_user, MessageLog)
     call cvmix_put_bkgnd('static_Tdiff', bkgnd_Tdiff,                         &
                          CVmix_bkgnd_params_user, MessageLog)
-    call cvmix_log_namelist(MessageLog, .false., "lvary_horizontal",          &
-                            ModuleName, RoutineName)
-    call cvmix_log_namelist(MessageLog, .false., "lvary_vertical",            &
-                            ModuleName, RoutineName)
+    call cvmix_log_namelist(MessageLog, .false., "lvary_horizontal", ModName, &
+                            SubName)
+    call cvmix_log_namelist(MessageLog, .false., "lvary_vertical", ModName,   &
+                            SubName)
 
     if (present(old_vals)) then
       select case (trim(old_vals))
@@ -226,7 +226,7 @@ contains
     integer :: nlev
     type(cvmix_global_params_type), pointer :: CVmix_params_in
     type(cvmix_bkgnd_params_type),  pointer :: CVmix_bkgnd_params_out
-    character(len=19), parameter :: RoutineName = "cvmix_init_bkgnd_1D"
+    character(len=19), parameter :: SubName = "cvmix_init_bkgnd_1D"
 
     nullify(CVmix_params_in)
     if (present(CVmix_params_user)) then
@@ -260,18 +260,18 @@ contains
       call cvmix_put_bkgnd('static_Tdiff', bkgnd_Tdiff,                       &
                            CVmix_bkgnd_params_user, ncol=ncol)
       call cvmix_log_namelist(MessageLog, .true.,  "lvary_horizontal",        &
-                              ModuleName, RoutineName)
+                              ModName, SubName)
       call cvmix_log_namelist(MessageLog, .false., "lvary_vertical",          &
-                              ModuleName, RoutineName)
+                              ModName, SubName)
     else
       call cvmix_put_bkgnd('static_Mdiff', bkgnd_Mdiff,                       &
                            CVmix_bkgnd_params_user, nlev=nlev)
       call cvmix_put_bkgnd('static_Tdiff', bkgnd_Tdiff,                       &
                            CVmix_bkgnd_params_user, nlev=nlev)
       call cvmix_log_namelist(MessageLog, .false., "lvary_horizontal",        &
-                              ModuleName, RoutineName)
+                              ModName, SubName)
       call cvmix_log_namelist(MessageLog, .true.,  "lvary_vertical",          &
-                              ModuleName, RoutineName)
+                              ModName, SubName)
     end if
 
     if (present(old_vals)) then
@@ -335,7 +335,7 @@ contains
     ! local vars
     integer :: nlev
     type(cvmix_bkgnd_params_type),  pointer :: CVmix_bkgnd_params_out
-    character(len=19), parameter :: RoutineName = "cvmix_init_bkgnd_2D"
+    character(len=19), parameter :: SubName = "cvmix_init_bkgnd_2D"
 
     CVmix_bkgnd_params_out => CVmix_bkgnd_params_saved
     if (present(CVmix_bkgnd_params_user)) then
@@ -357,10 +357,10 @@ contains
                          CVmix_bkgnd_params_user)
     call cvmix_put_bkgnd("static_Tdiff", bkgnd_Tdiff, ncol, nlev,             &
                          CVmix_bkgnd_params_user)
-    call cvmix_log_namelist(MessageLog, .true., "lvary_horizontal",           &
-                            ModuleName, RoutineName)
-    call cvmix_log_namelist(MessageLog, .true., "lvary_vertical",             &
-                            ModuleName, RoutineName)
+    call cvmix_log_namelist(MessageLog, .true., "lvary_horizontal", ModName,  &
+                            SubName)
+    call cvmix_log_namelist(MessageLog, .true., "lvary_vertical", ModName,    &
+                            SubName)
  
     if (present(old_vals)) then
       select case (trim(old_vals))
@@ -455,7 +455,7 @@ contains
 
     ! Local copies to make code easier to read
     real(cvmix_r8), dimension(CVmix_params_in%max_nlev+1) :: Mdiff, Tdiff, zw
-    character(len=27), parameter ::RoutineName = "cvmix_init_bkgnd_BryanLewis"
+    character(len=27), parameter ::SubName = "cvmix_init_bkgnd_BryanLewis"
 
     CVmix_bkgnd_params_out => CVmix_bkgnd_params_saved
     if (present(CVmix_bkgnd_params_user)) then
@@ -474,16 +474,16 @@ contains
     do i=1,4
       select case (i)
         case (1)
-          call cvmix_log_namelist(MessageLog, bl1, "vdc1", ModuleName,        &
+          call cvmix_log_namelist(MessageLog, bl1, "vdc1", ModName,           &
                                   "cvmix_init_bkgnd_BryanLewis")
         case (2)
-          call cvmix_log_namelist(MessageLog, bl2, "vdc2", ModuleName,        &
+          call cvmix_log_namelist(MessageLog, bl2, "vdc2", ModName,           &
                                   "cvmix_init_bkgnd_BryanLewis")
         case (3)
-          call cvmix_log_namelist(MessageLog, bl3, "linv", ModuleName,        &
+          call cvmix_log_namelist(MessageLog, bl3, "linv", ModName,           &
                                   "cvmix_init_bkgnd_BryanLewis")
         case (4)
-          call cvmix_log_namelist(MessageLog, bl4, "dpth", ModuleName,        &
+          call cvmix_log_namelist(MessageLog, bl4, "dpth", ModName,           &
                                   "cvmix_init_bkgnd_BryanLewis")
       end select
     end do
@@ -519,10 +519,10 @@ contains
                                cvmix_bkgnd_params_user)
     end if
 
-    call cvmix_log_namelist(MessageLog, .false., "lvary_horizontal",          &
-                            ModuleName, RoutineName)
-    call cvmix_log_namelist(MessageLog, .true.,  "lvary_vertical",            &
-                            ModuleName, RoutineName)
+    call cvmix_log_namelist(MessageLog, .false., "lvary_horizontal", ModName, &
+                            SubName)
+    call cvmix_log_namelist(MessageLog, .true.,  "lvary_vertical", ModName,   &
+                            SubName)
 
 !EOC
 
@@ -877,7 +877,7 @@ contains
 
     type(cvmix_bkgnd_params_type), pointer :: CVmix_bkgnd_params_out
 
-    character(len=20), parameter:: RoutineName = "cvmix_put_bkgnd_real"
+    character(len=20), parameter:: SubName = "cvmix_put_bkgnd_real"
 
     CVmix_bkgnd_params_out => CVmix_bkgnd_params_saved
     if (present(CVmix_bkgnd_params_user)) then
@@ -911,8 +911,7 @@ contains
       
     end select
     if (present(MessageLog)) &
-      call cvmix_log_namelist(MessageLog, val, varname, ModuleName,           &
-                              RoutineName)
+      call cvmix_log_namelist(MessageLog, val, varname, ModName, SubName)
 
 !EOC
 
