@@ -19,7 +19,8 @@ module cvmix_io
                                      cvmix_message_type,                      &
                                      cvmix_zero,                              &
                                      cvmix_strlen
-   use cvmix_log,             only : cvmix_status
+   use cvmix_log,             only : cvmix_log_diagnostic,                    &
+                                     cvmix_status
    use cvmix_utils,           only : cvmix_att_name
 #ifdef _NETCDF
    use netcdf
@@ -44,6 +45,7 @@ module cvmix_io
   public :: print_open_files
   public :: cvmix_output_write_att
   public :: cvmix_print_log
+  public :: cvmix_log_write
 
   interface cvmix_input_read
     module procedure cvmix_input_read_1d_double
@@ -64,6 +66,12 @@ module cvmix_io
     module procedure cvmix_output_write_att_real
     module procedure cvmix_output_write_att_string
   end interface
+
+  interface cvmix_log_write
+    module procedure cvmix_log_write_int
+    module procedure cvmix_log_write_r8
+    module procedure cvmix_log_write_4r8
+  end interface cvmix_log_write
 
 ! !DEFINED PARAMETERS:
   integer, parameter :: ASCII_FILE_TYPE  = 1
@@ -1698,6 +1706,48 @@ contains
   end subroutine netcdf_check
 
 #endif
+
+  subroutine cvmix_log_write_int(MessageLog, varname, val, ModuleName)
+
+    character(len=*),                  intent(in)    :: varname, ModuleName
+    integer,                           intent(in)    :: val
+    type(cvmix_message_type), pointer, intent(inout) :: MessageLog
+
+    character(len=19), parameter :: RoutineName = "cvmix_log_write_int"
+    character(len=cvmix_strlen)  :: Message
+
+    write(Message,"(A,' = ', I0)") varname, val
+    call cvmix_log_diagnostic(MessageLog, Message, ModuleName, RoutineName)
+
+  end subroutine cvmix_log_write_int
+
+  subroutine cvmix_log_write_r8(MessageLog, varname, val, ModuleName)
+
+    character(len=*),                  intent(in)    :: varname, ModuleName
+    real(cvmix_r8),                    intent(in)    :: val
+    type(cvmix_message_type), pointer, intent(inout) :: MessageLog
+
+    character(len=18), parameter :: RoutineName = "cvmix_log_write_r8"
+    character(len=cvmix_strlen)  :: Message
+
+    write(Message,"(A,' = ', F21.15)") varname, val
+    call cvmix_log_diagnostic(MessageLog, Message, ModuleName, RoutineName)
+
+  end subroutine cvmix_log_write_r8
+
+  subroutine cvmix_log_write_4r8(MessageLog, varname, val, ModuleName)
+
+    character(len=*),                  intent(in)    :: varname, ModuleName
+    real(cvmix_r8), dimension(4),      intent(in)    :: val
+    type(cvmix_message_type), pointer, intent(inout) :: MessageLog
+
+    character(len=19), parameter :: RoutineName = "cvmix_log_write_4r8"
+    character(len=cvmix_strlen)  :: Message
+
+    write(Message,"(A,': ', 4F7.3)") varname, val
+    call cvmix_log_diagnostic(MessageLog, Message, ModuleName, RoutineName)
+
+  end subroutine cvmix_log_write_4r8
 
   ! Private routine to parse StatusCode
   subroutine cvmix_print_log_entry(current)
