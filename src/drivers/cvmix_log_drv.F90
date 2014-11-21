@@ -17,7 +17,7 @@ module cvmix_log_drv
     use cvmix_kinds_and_types, only : cvmix_message_type
     use cvmix_log,             only : cvmix_log_init,                         &
                                       cvmix_log_verbose,                      &
-                                      cvmix_log_namelist,                     &
+                                      cvmix_log_params,                       &
                                       cvmix_log_warning,                      &
                                       cvmix_log_diagnostic,                   &
                                       cvmix_log_error,                        &
@@ -72,10 +72,10 @@ contains
     call cvmix_log_erase(rootlog)
     write(*,*) ""
 
-    ! Set status to EchoNamelist, print log
-    call cvmix_log_init(cvmix_status%EchoNamelist)
+    ! Set status to EchoParams, print log
+    call cvmix_log_init(cvmix_status%EchoParams)
     call cvmix_test_log_writing(rootlog)
-    write(*,"(A)") "Logging level = EchoNamelist"
+    write(*,"(A)") "Logging level = EchoParams"
     write(*,"(A)") "----"
     call cvmix_print_log(rootlog, StopOnError=.false.)
     call cvmix_log_erase(rootlog)
@@ -120,8 +120,8 @@ contains
 
     call cvmix_log_verbose(MessageLog, "Example verbose message", ModName,    &
                            SubName)
-    call cvmix_log_namelist(MessageLog, .true., "NamelistMessage",            &
-                            ModName, SubName)
+    call cvmix_log_params(MessageLog, .true., "NamelistMessage", ModName,     &
+                          SubName)
     call cvmix_log_diagnostic(MessageLog, "Example diagnostic message",       &
                               ModName, SubName)
     call cvmix_log_warning(MessageLog, "Example warning message", ModName,    &

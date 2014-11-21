@@ -29,7 +29,7 @@ module cvmix_log
   ! levels returned by cvmix_message_type
   type, private :: cvmix_verbosity_levels
     integer :: Verbose
-    integer :: EchoNamelist
+    integer :: EchoParams
     integer :: Diagnostic
     integer :: Warning
     integer :: Error
@@ -47,18 +47,18 @@ module cvmix_log
 
   public :: cvmix_log_init
   public :: cvmix_log_verbose
-  public :: cvmix_log_namelist
+  public :: cvmix_log_params
   public :: cvmix_log_diagnostic
   public :: cvmix_log_warning
   public :: cvmix_log_error
   public :: cvmix_log_erase
 
-  interface cvmix_log_namelist
-    module procedure cvmix_log_namelist_int
-    module procedure cvmix_log_namelist_r8
-    module procedure cvmix_log_namelist_str
-    module procedure cvmix_log_namelist_bool
-  end interface cvmix_log_namelist
+  interface cvmix_log_params
+    module procedure cvmix_log_params_int
+    module procedure cvmix_log_params_r8
+    module procedure cvmix_log_params_str
+    module procedure cvmix_log_params_bool
+  end interface cvmix_log_params
 
   ! Private variable that is set in cvmix_log_init -- if cvmix_log_init is not
   ! run, then nothing is written into message log
@@ -134,13 +134,13 @@ contains
 
 !BOP
 
-! !IROUTINE: cvmix_log_namelist_int
+! !IROUTINE: cvmix_log_params_int
 ! !INTERFACE:
 
-  subroutine cvmix_log_namelist_int(self, val, VarName, ModName, Subname)
+  subroutine cvmix_log_params_int(self, val, VarName, ModName, Subname)
 
 ! !DESCRIPTION:
-!  Prints "varname = val" to log for integer val
+!  Prints "varname = val" to log (with status "EchoParams") for integer val
 !\\
 !\\
 
@@ -158,7 +158,7 @@ contains
 
     write(Message, "(2A,I0)") trim(VarName), " = ", val
 
-    call cvmix_new_log(NewEntry, cvmix_status%EchoNamelist, Message, ModName, &
+    call cvmix_new_log(NewEntry, cvmix_status%EchoParams, Message, ModName,   &
                        SubName)
 
     call cvmix_message_append(self, NewEntry)
@@ -166,17 +166,17 @@ contains
 
 !EOC
 
-  end subroutine cvmix_log_namelist_int
+  end subroutine cvmix_log_params_int
 
 !BOP
 
-! !IROUTINE: cvmix_log_namelist_r8
+! !IROUTINE: cvmix_log_params_r8
 ! !INTERFACE:
 
-  subroutine cvmix_log_namelist_r8(self, val, VarName, ModName, SubName)
+  subroutine cvmix_log_params_r8(self, val, VarName, ModName, SubName)
 
 ! !DESCRIPTION:
-!  Prints "varname = val" to log for real val
+!  Prints "varname = val" to log (with status "EchoParams") for real val
 !\\
 !\\
 
@@ -194,7 +194,7 @@ contains
 
     write(Message, "(2A,E10.3E2)") trim(VarName), " = ", val
 
-    call cvmix_new_log(NewEntry, cvmix_status%EchoNamelist, Message, ModName, &
+    call cvmix_new_log(NewEntry, cvmix_status%EchoParams, Message, ModName,   &
                        SubName)
 
     call cvmix_message_append(self, NewEntry)
@@ -202,17 +202,17 @@ contains
 
 !EOC
 
-  end subroutine cvmix_log_namelist_r8
+  end subroutine cvmix_log_params_r8
 
 !BOP
 
-! !IROUTINE: cvmix_log_namelist_str
+! !IROUTINE: cvmix_log_params_str
 ! !INTERFACE:
 
-  subroutine cvmix_log_namelist_str(self, val, VarName, ModName, SubName)
+  subroutine cvmix_log_params_str(self, val, VarName, ModName, SubName)
 
 ! !DESCRIPTION:
-!  Prints "varname = val" to log for string val
+!  Prints "varname = val" to log (with status "EchoParams") for string val
 !\\
 !\\
 
@@ -230,7 +230,7 @@ contains
 
     write(Message, "(4A)") trim(VarName), " = '", trim(val), "'"
 
-    call cvmix_new_log(NewEntry, cvmix_status%EchoNamelist, Message, ModName, &
+    call cvmix_new_log(NewEntry, cvmix_status%EchoParams, Message, ModName,   &
                        SubName)
 
     call cvmix_message_append(self, NewEntry)
@@ -238,17 +238,17 @@ contains
 
 !EOC
 
-  end subroutine cvmix_log_namelist_str
+  end subroutine cvmix_log_params_str
 
 !BOP
 
-! !IROUTINE: cvmix_log_namelist_bool
+! !IROUTINE: cvmix_log_params_bool
 ! !INTERFACE:
 
-  subroutine cvmix_log_namelist_bool(self, val, VarName, ModName, SubName)
+  subroutine cvmix_log_params_bool(self, val, VarName, ModName, SubName)
 
 ! !DESCRIPTION:
-!  Prints "varname = val" to log (with status "EchoNamelist") for logical val
+!  Prints "varname = val" to log (with status "EchoParams") for logical val
 !\\
 !\\
 
@@ -270,7 +270,7 @@ contains
       write(Message, "(2A)") trim(VarName), " = .false."
     end if
 
-    call cvmix_new_log(NewEntry, cvmix_status%EchoNamelist, Message, ModName, &
+    call cvmix_new_log(NewEntry, cvmix_status%EchoParams, Message, ModName,   &
                        SubName)
 
     call cvmix_message_append(self, NewEntry)
@@ -278,7 +278,7 @@ contains
 
 !EOC
 
-  end subroutine cvmix_log_namelist_bool
+  end subroutine cvmix_log_params_bool
 
 !BOP
 

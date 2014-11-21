@@ -41,7 +41,7 @@
                                     cvmix_math_cubic_root_find,               &
                                     cvmix_math_evaluate_cubic
   use cvmix_put_get,         only : cvmix_put
-  use cvmix_log,             only : cvmix_log_namelist
+  use cvmix_log,             only : cvmix_log_params
   use cvmix_utils,           only : cvmix_update_wrap
 
 !EOP
@@ -341,8 +341,8 @@ contains
       call cvmix_put_kpp('interp_type', CVMIX_MATH_INTERP_QUAD,               &
                          CVmix_kpp_params_user)
     end if
-    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_str('interp_type'),     &
-                            'interp_type', ModName, SubName)
+    call cvmix_log_params(MessageLog, cvmix_get_kpp_str('interp_type'),       &
+                          'interp_type', ModName, SubName)
 
     if (present(interp_type2)) then
       select case (trim(interp_type2))
@@ -367,8 +367,8 @@ contains
       call cvmix_put_kpp('interp_type2', CVMIX_KPP_INTERP_LMD94,              &
                          CVmix_kpp_params_user)
     end if
-    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_str('interp_type2'),    &
-                            'interp_type2', ModName, SubName)
+    call cvmix_log_params(MessageLog, cvmix_get_kpp_str('interp_type2'),      &
+                          'interp_type2', ModName, SubName)
 
     if (present(MatchTechnique)) then
       select case (trim(MatchTechnique))
@@ -393,20 +393,20 @@ contains
       call cvmix_put_kpp('MatchTechnique', CVMIX_KPP_SIMPLE_SHAPES,           &
                          CVmix_kpp_params_user)
     end if
-    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_str('MatchTechnique'),  &
-                            'MatchTechnique', ModName, SubName)
+    call cvmix_log_params(MessageLog, cvmix_get_kpp_str('MatchTechnique'),    &
+                          'MatchTechnique', ModName, SubName)
 
     if (present(old_vals)) then
       select case (trim(old_vals))
         case ("overwrite")
           call cvmix_put_kpp('handle_old_vals', CVMIX_OVERWRITE_OLD_VAL,      &
-                               cvmix_kpp_params_user)
+                             cvmix_kpp_params_user)
         case ("sum")
           call cvmix_put_kpp('handle_old_vals', CVMIX_SUM_OLD_AND_NEW_VALS,   &
-                               cvmix_kpp_params_user)
+                             cvmix_kpp_params_user)
         case ("max")
           call cvmix_put_kpp('handle_old_vals', CVMIX_MAX_OLD_AND_NEW_VALS,   &
-                               cvmix_kpp_params_user)
+                             cvmix_kpp_params_user)
         case DEFAULT
           print*, "ERROR: ", trim(old_vals), " is not a valid option for ",   &
                   "handling old values of diff and visc."
@@ -414,10 +414,10 @@ contains
       end select
     else
       call cvmix_put_kpp('handle_old_vals', CVMIX_OVERWRITE_OLD_VAL,          &
-                               cvmix_kpp_params_user)
+                         cvmix_kpp_params_user)
     end if
-    call cvmix_log_namelist(MessageLog, cvmix_get_kpp_str('handle_old_vals'), &
-                            'handle_old_vals', ModName, SubName)
+    call cvmix_log_params(MessageLog, cvmix_get_kpp_str('handle_old_vals'),   &
+                          'handle_old_vals', ModName, SubName)
 
     if (present(lEkman)) then
       call cvmix_put_kpp('lEkman', lEkman, CVmix_kpp_params_user, MessageLog)
@@ -997,7 +997,7 @@ contains
         stop 1
     end select
     if (present(MessageLog)) &
-      call cvmix_log_namelist(MessageLog, val, varname, ModName, SubName)
+      call cvmix_log_params(MessageLog, val, varname, ModName, SubName)
 
 !EOC
 
@@ -1110,7 +1110,7 @@ contains
         stop 1
     end select
     if (present(MessageLog)) &
-      call cvmix_log_namelist(MessageLog, val, varname, ModName, SubName)
+      call cvmix_log_params(MessageLog, val, varname, ModName, SubName)
 
 !EOC
 

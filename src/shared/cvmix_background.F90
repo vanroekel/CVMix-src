@@ -36,7 +36,7 @@ module cvmix_background
                                     CVMIX_MAX_OLD_AND_NEW_VALS
   use cvmix_put_get,         only : cvmix_put
   use cvmix_utils,           only : cvmix_update_wrap
-  use cvmix_log,             only : cvmix_log_namelist
+  use cvmix_log,             only : cvmix_log_params
 
 !EOP
 
@@ -158,10 +158,10 @@ contains
                          CVmix_bkgnd_params_user, MessageLog)
     call cvmix_put_bkgnd('static_Tdiff', bkgnd_Tdiff,                         &
                          CVmix_bkgnd_params_user, MessageLog)
-    call cvmix_log_namelist(MessageLog, .false., "lvary_horizontal", ModName, &
-                            SubName)
-    call cvmix_log_namelist(MessageLog, .false., "lvary_vertical", ModName,   &
-                            SubName)
+    call cvmix_log_params(MessageLog, .false., "lvary_horizontal", ModName,   &
+                          SubName)
+    call cvmix_log_params(MessageLog, .false., "lvary_vertical", ModName,     &
+                          SubName)
 
     if (present(old_vals)) then
       select case (trim(old_vals))
@@ -259,19 +259,19 @@ contains
                            CVmix_bkgnd_params_user, ncol=ncol)
       call cvmix_put_bkgnd('static_Tdiff', bkgnd_Tdiff,                       &
                            CVmix_bkgnd_params_user, ncol=ncol)
-      call cvmix_log_namelist(MessageLog, .true.,  "lvary_horizontal",        &
-                              ModName, SubName)
-      call cvmix_log_namelist(MessageLog, .false., "lvary_vertical",          &
-                              ModName, SubName)
+      call cvmix_log_params(MessageLog, .true.,  "lvary_horizontal", ModName, &
+                            SubName)
+      call cvmix_log_params(MessageLog, .false., "lvary_vertical", ModName,   &
+                            SubName)
     else
       call cvmix_put_bkgnd('static_Mdiff', bkgnd_Mdiff,                       &
                            CVmix_bkgnd_params_user, nlev=nlev)
       call cvmix_put_bkgnd('static_Tdiff', bkgnd_Tdiff,                       &
                            CVmix_bkgnd_params_user, nlev=nlev)
-      call cvmix_log_namelist(MessageLog, .false., "lvary_horizontal",        &
-                              ModName, SubName)
-      call cvmix_log_namelist(MessageLog, .true.,  "lvary_vertical",          &
-                              ModName, SubName)
+      call cvmix_log_params(MessageLog, .false., "lvary_horizontal", ModName, &
+                            SubName)
+      call cvmix_log_params(MessageLog, .true.,  "lvary_vertical", ModName,   &
+                            SubName)
     end if
 
     if (present(old_vals)) then
@@ -357,10 +357,10 @@ contains
                          CVmix_bkgnd_params_user)
     call cvmix_put_bkgnd("static_Tdiff", bkgnd_Tdiff, ncol, nlev,             &
                          CVmix_bkgnd_params_user)
-    call cvmix_log_namelist(MessageLog, .true., "lvary_horizontal", ModName,  &
-                            SubName)
-    call cvmix_log_namelist(MessageLog, .true., "lvary_vertical", ModName,    &
-                            SubName)
+    call cvmix_log_params(MessageLog, .true., "lvary_horizontal", ModName,    &
+                          SubName)
+    call cvmix_log_params(MessageLog, .true., "lvary_vertical", ModName,      &
+                          SubName)
  
     if (present(old_vals)) then
       select case (trim(old_vals))
@@ -474,17 +474,17 @@ contains
     do i=1,4
       select case (i)
         case (1)
-          call cvmix_log_namelist(MessageLog, bl1, "vdc1", ModName,           &
-                                  "cvmix_init_bkgnd_BryanLewis")
+          call cvmix_log_params(MessageLog, bl1, "vdc1", ModName,             &
+                                "cvmix_init_bkgnd_BryanLewis")
         case (2)
-          call cvmix_log_namelist(MessageLog, bl2, "vdc2", ModName,           &
-                                  "cvmix_init_bkgnd_BryanLewis")
+          call cvmix_log_params(MessageLog, bl2, "vdc2", ModName,             &
+                                "cvmix_init_bkgnd_BryanLewis")
         case (3)
-          call cvmix_log_namelist(MessageLog, bl3, "linv", ModName,           &
-                                  "cvmix_init_bkgnd_BryanLewis")
+          call cvmix_log_params(MessageLog, bl3, "linv", ModName,             &
+                                "cvmix_init_bkgnd_BryanLewis")
         case (4)
-          call cvmix_log_namelist(MessageLog, bl4, "dpth", ModName,           &
-                                  "cvmix_init_bkgnd_BryanLewis")
+          call cvmix_log_params(MessageLog, bl4, "dpth", ModName,             &
+                                "cvmix_init_bkgnd_BryanLewis")
       end select
     end do
 
@@ -519,10 +519,10 @@ contains
                                cvmix_bkgnd_params_user)
     end if
 
-    call cvmix_log_namelist(MessageLog, .false., "lvary_horizontal", ModName, &
-                            SubName)
-    call cvmix_log_namelist(MessageLog, .true.,  "lvary_vertical", ModName,   &
-                            SubName)
+    call cvmix_log_params(MessageLog, .false., "lvary_horizontal", ModName,   &
+                          SubName)
+    call cvmix_log_params(MessageLog, .true.,  "lvary_vertical", ModName,     &
+                          SubName)
 
 !EOC
 
@@ -911,7 +911,7 @@ contains
       
     end select
     if (present(MessageLog)) &
-      call cvmix_log_namelist(MessageLog, val, varname, ModName, SubName)
+      call cvmix_log_params(MessageLog, val, varname, ModName, SubName)
 
 !EOC
 

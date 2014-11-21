@@ -1761,7 +1761,7 @@ contains
     select case (current%StatusCode)
       case (cvmix_status%Verbose, cvmix_status%Diagnostic)
         write(*, "(A)") trim(current%Message)
-      case (cvmix_status%EchoNamelist)
+      case (cvmix_status%EchoParams)
         write(*, 601) trim(current%ModName), trim(current%Message)
       case (cvmix_status%Warning)
         write(*, 603) trim(current%ModName), trim(current%SubName),           &

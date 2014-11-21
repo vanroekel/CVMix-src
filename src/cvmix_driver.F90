@@ -30,7 +30,7 @@ Program cvmix_driver
   use cvmix_log,             only : cvmix_log_init,                           &
                                     cvmix_status,                             &
                                     cvmix_log_verbose,                        &
-                                    cvmix_log_namelist,                       &
+                                    cvmix_log_params,                         &
                                     cvmix_log_error,                          &
                                     cvmix_log_erase
   use cvmix_background_drv,  only : cvmix_BL_driver
@@ -45,7 +45,7 @@ Program cvmix_driver
   real(kind=cvmix_r8) :: ocn_depth 
   character(len=cvmix_strlen) :: mix_type, Verbosity, Message
   type(cvmix_message_type), pointer :: CVMixLog
-  character(len=12), parameter :: RoutineName = "cvmix_driver"
+  character(len=12), parameter :: SubName = "cvmix_driver"
 
   namelist/cvmix_nml/mix_type, nlev, max_nlev, ocn_depth, Verbosity
 
@@ -63,8 +63,8 @@ Program cvmix_driver
   select case (trim(Verbosity))
     case ('Verbose')
       StatusLevel = cvmix_status%Verbose
-    case ('EchoNamelist')
-      StatusLevel = cvmix_status%EchoNamelist
+    case ('EchoParams')
+      StatusLevel = cvmix_status%EchoParams
     case ('Diagnostic')
       StatusLevel = cvmix_status%Diagnostic
     case ('Warning')
@@ -74,20 +74,18 @@ Program cvmix_driver
     case DEFAULT
       call cvmix_log_init()
       write(Message,'(2A)') trim(Verbosity), " is not a valid Verbosity"
-      call cvmix_log_error(CVMixLog, Message, "Main", RoutineName)
+      call cvmix_log_error(CVMixLog, Message, "Main", SubName)
       StatusLevel = cvmix_status%Warning
   end select
   call cvmix_log_init(StatusLevel)
   call cvmix_print_log(CVMixLog)
   call cvmix_log_erase(CVMixLog)
 
-  call cvmix_log_namelist(CVMixLog, mix_type, "mix_type", "Main", RoutineName)
-  call cvmix_log_namelist(CVMixLog, nlev, "nlev", "Main", RoutineName)
-  call cvmix_log_namelist(CVMixLog, max_nlev, "max_nlev", "Main", RoutineName)
-  call cvmix_log_namelist(CVMixLog, ocn_depth, "ocn_depth", "Main",           &
-                          RoutineName)
-  call cvmix_log_namelist(CVMixLog, Verbosity, "Verbosity", "Main",           &
-                          RoutineName)
+  call cvmix_log_params(CVMixLog, mix_type, "mix_type", "Main", SubName)
+  call cvmix_log_params(CVMixLog, nlev, "nlev", "Main", SubName)
+  call cvmix_log_params(CVMixLog, max_nlev, "max_nlev", "Main", SubName)
+  call cvmix_log_params(CVMixLog, ocn_depth, "ocn_depth", "Main", SubName)
+  call cvmix_log_params(CVMixLog, Verbosity, "Verbosity", "Main", SubName)
                      
   call cvmix_print_log(CVMixLog)
   call cvmix_log_erase(CVMixLog)
@@ -109,11 +107,11 @@ Program cvmix_driver
     case DEFAULT
       write(Message, "(A,A,A)") "mix_type = '", trim(mix_type),               &
                                 "' is not supported by this driver."
-      call cvmix_log_error(CVMixLog, Message, "Main", RoutineName)
+      call cvmix_log_error(CVMixLog, Message, "Main", SubName)
   end select
 
   write(Message, "(A,A)") "Completed run with mix_type = ", trim(mix_type)
-  call cvmix_log_verbose(CVMixLog, Message, "Main", RoutineName)
+  call cvmix_log_verbose(CVMixLog, Message, "Main", SubName)
   call cvmix_print_log(CVMixLog)
   call cvmix_log_erase(CVMixLog)
 
