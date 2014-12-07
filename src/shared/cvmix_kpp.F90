@@ -41,7 +41,8 @@
                                     cvmix_math_cubic_root_find,               &
                                     cvmix_math_evaluate_cubic
   use cvmix_put_get,         only : cvmix_put
-  use cvmix_log,             only : cvmix_log_params
+  use cvmix_log,             only : cvmix_log_params,                         &
+                                    cvmix_log_error
   use cvmix_utils,           only : cvmix_update_wrap
 
 !EOP
@@ -222,13 +223,14 @@ contains
 !EOP
 !BOC
 
-    character(len=14), parameter:: SubName = "cvmix_kpp_init"
+    character(len=14), parameter :: SubName = "cvmix_kpp_init"
+    character(len=cvmix_strlen)  :: Message
     real(cvmix_r8) :: zm, zs, a_m, a_s, c_m, c_s
 
     if (present(ri_crit)) then
       if (ri_crit.lt.cvmix_zero) then
-        print*, "ERROR: ri_crit can not be negative."
-        stop 1
+        call cvmix_log_error(MessageLog, "ri_crit can not be negative",       &
+                             ModName, SubName)
       end if
       call cvmix_put_kpp('Ri_crit', ri_crit, CVmix_kpp_params_user,           &
                          MessageLog)
@@ -239,8 +241,8 @@ contains
 
     if (present(vonkarman)) then
       if (vonkarman.lt.cvmix_zero) then
-        print*, "ERROR: vonkarman can not be negative."
-        stop 1
+        call cvmix_log_error(MessageLog, "vonkarman can not be negative",     &
+                             ModName, SubName)
       end if
       call cvmix_put_kpp('vonkarman', vonkarman, CVmix_kpp_params_user,       &
                          MessageLog)
@@ -257,8 +259,8 @@ contains
 
     if (present(zeta_m)) then
       if (zeta_m.ge.cvmix_zero) then
-        print*, "ERROR: zeta_m must be negative."
-        stop 1
+        call cvmix_log_error(MessageLog, "zeta_m must be negative", ModName,  &
+                             SubName)
       end if
       zm = zeta_m
     else
@@ -269,8 +271,8 @@ contains
 
     if (present(zeta_s)) then
       if (zeta_s.ge.cvmix_zero) then
-        print*, "ERROR: zeta_s must be negative."
-        stop 1
+        call cvmix_log_error(MessageLog, "zeta_s must be negative", ModName,  &
+                             SubName)
       end if
       zs = zeta_s
     else
@@ -300,8 +302,9 @@ contains
     if (present(surf_layer_ext)) then
       if ((surf_layer_ext.lt.cvmix_zero).or.(surf_layer_ext.gt.cvmix_one))    &
       then
-        print*, "surf_layer_ext must be between 0 and 1, inclusive."
-        stop 1
+        write(Message,"(2A)") "surf_layer_ext must be between 0 and 1",       &
+                              ", inclusive."
+        call cvmix_log_error(MessageLog, Message, ModName, SubName)
       end if
       call cvmix_put_kpp('surf_layer_ext', surf_layer_ext,                    &
                          CVmix_kpp_params_user, MessageLog)
@@ -333,9 +336,9 @@ contains
           call cvmix_put_kpp('interp_type', CVMIX_MATH_INTERP_CUBE_SPLINE,    &
                              CVmix_kpp_params_user)
         case DEFAULT
-          print*, "ERROR: ", trim(interp_type), " is not a valid type of ",   &
-                  "interpolation!"
-          stop 1
+          write(Message,"(3A)") trim(interp_type), " is not a valid type ",   &
+                                "of interpolation!"
+          call cvmix_log_error(MessageLog, Message, ModName, SubName)
       end select
     else
       call cvmix_put_kpp('interp_type', CVMIX_MATH_INTERP_QUAD,               &
