@@ -930,7 +930,7 @@ contains
                                             surf_fric, langmuir_Efactor,      &
                                             w_m, w_s,                         &
                                             CVmix_kpp_params_user)
-    do kw=2,ktup+1
+    do kw=2,kwup
       !   (3b) Evaluate G(sigma) at each cell interface
       MshapeAtS = cvmix_math_evaluate_cubic(Mshape, sigma(kw))
       TshapeAtS = cvmix_math_evaluate_cubic(Tshape, sigma(kw))
