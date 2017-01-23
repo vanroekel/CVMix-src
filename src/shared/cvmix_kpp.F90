@@ -2250,7 +2250,7 @@ contains
     Vtc = sqrt(0.2_cvmix_r8/(cvmix_get_kpp_real('c_s', CVmix_kpp_params_in) * &
                 cvmix_get_kpp_real('surf_layer_ext', CVmix_kpp_params_in))) / &
           (cvmix_get_kpp_real('vonkarman', CVmix_kpp_params_in)**2)
-    do kt=1,nlev
+    do kt=2,nlev-1
       if (CVmix_kpp_params_in%lscalar_Cv) then
         Cv = cvmix_get_kpp_real('Cv', CVmix_kpp_params_in)
       else
@@ -2263,7 +2263,7 @@ contains
       end if
 
       cvmix_kpp_compute_unresolved_shear(kt) = -Cv*Vtc*zt_cntr(kt)*           &
-                            N_cntr(kt)*ws_cntr(kt)/CVmix_kpp_params_in%Ri_crit
+                            maxval(N_cntr(kt-1:kt+1))*ws_cntr(kt)/CVmix_kpp_params_in%Ri_crit
       if (cvmix_kpp_compute_unresolved_shear(kt).lt.                          &
           CVmix_kpp_params_in%minVtsqr) then
         cvmix_kpp_compute_unresolved_shear(kt) = CVmix_kpp_params_in%minVtsqr
